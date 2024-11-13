@@ -462,7 +462,7 @@ param deployPolicy bool = false
   'CMMC'
 ])
 @description('[NISTRev4/NISTRev5/IL5/CMMC] Built-in policy assignments to assign, it defaults to "NISTRev4". IL5 is only available for AzureUsGovernment and will switch to NISTRev4 if tried in AzureCloud.')
-param policy string = 'NISTRev4'
+param policy string = 'NISTRev5'
 
 // MICROSOFT DEFENDER FOR CLOUD PARAMETERS
 
@@ -474,7 +474,7 @@ param deployDefender bool = true
   'Free'
 ])
 @description('[Standard/Free] The SKU for Defender. It defaults to "Free".')
-param defenderSkuTier string = 'Free'
+param defenderSkuTier string = 'Standard'
 
 @description('Email address of the contact, in the form of john@doe.com')
 param emailSecurityContact string = ''
