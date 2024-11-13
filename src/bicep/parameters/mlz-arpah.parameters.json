@@ -21,16 +21,13 @@
       "value": ""
     },
     "location": {
-      "value": "EastUS"
+      "value": "CentralUS"
     },
     "deployIdentity": {
       "value": false
     },
     "deployNetworkWatcher": {
-      "value": false
-    },
-    "tags": {
-      "value": {}
+      "value": true
     },
     "hubVirtualNetworkAddressPrefix": {
       "value": "10.10.0.0/23"
@@ -62,199 +59,8 @@
     "sharedServicesSubnetAddressPrefix": {
       "value": "10.10.4.0/24'"
     },
-    "enableProxy": {
-      "value": false
-    },
-    "dnsServers": {
-      "value": []
-    },
-    "firewallDiagnosticsLogs": {
-      "value": []
-    },
-    "firewallDiagnosticsMetrics": {
-      "value": []
-    },
-    "firewallClientPublicIPAddressAvailabilityZones": {
-      "value": []
-    },
-    "firewallManagementPublicIPAddressAvailabilityZones": {
-      "value": []
-    },
-    "firewallSupernetIPAddress": {
-      "value": ""
-    },
-    "publicIPAddressDiagnosticsLogs": {
-      "value": []
-    },
-    "publicIPAddressDiagnosticsMetrics": {
-      "value": []
-    },
-    "hubVirtualNetworkDiagnosticsLogs": {
-      "value": []
-    },
-    "hubVirtualNetworkDiagnosticsMetrics": {
-      "value": []
-    },
-    "hubNetworkSecurityGroupRules": {
-      "value": []
-    },
-    "hubNetworkSecurityGroupDiagnosticsLogs": {
-      "value": []
-    },
-    "hubNetworkSecurityGroupDiagnosticsMetrics": {
-      "value": []
-    },
-    "identityVirtualNetworkDiagnosticsLogs": {
-      "value": []
-    },
-    "identityVirtualNetworkDiagnosticsMetrics": {
-      "value": []
-    },
-    "identityNetworkSecurityGroupRules": {
-      "value": []
-    },
-    "identityNetworkSecurityGroupDiagnosticsLogs": {
-      "value": []
-    },
-    "identityNetworkSecurityGroupDiagnosticsMetrics": {
-      "value": []
-    },
-    "keyVaultDiagnosticsLogs": {
-      "value": []
-    },
-    "operationsVirtualNetworkDiagnosticsLogs": {
-      "value": []
-    },
-    "operationsVirtualNetworkDiagnosticsMetrics": {
-      "value": []
-    },
-    "operationsNetworkSecurityGroupRules": {
-      "value": []
-    },
-    "operationsNetworkSecurityGroupDiagnosticsLogs": {
-      "value": []
-    },
-    "operationsNetworkSecurityGroupDiagnosticsMetrics": {
-      "value": []
-    },
-    "sharedServicesVirtualNetworkDiagnosticsLogs": {
-      "value": []
-    },
-    "sharedServicesVirtualNetworkDiagnosticsMetrics": {
-      "value": []
-    },
-    "sharedServicesNetworkSecurityGroupRules": {
-      "value": []
-    },
-    "sharedServicesNetworkSecurityGroupDiagnosticsLogs": {
-      "value": []
-    },
-    "sharedServicesNetworkSecurityGroupDiagnosticsMetrics": {
-      "value": []
-    },
     "deploySentinel": {
       "value": true
-    },
-    "logAnalyticsWorkspaceCappingDailyQuotaGb": {
-      "value": 0
-    },
-    "logAnalyticsWorkspaceNoSentinelRetentionInDays": {
-      "value": 0
-    },
-    "logAnalyticsSentinelWorkspaceRetentionInDays": {
-      "value": 0
-    },
-    "logAnalyticsWorkspaceSkuName": {},
-    "logStorageSkuName": {
-      "value": ""
-    },
-    "bastionDiagnosticsLogs": {
-      "value": []
-    },
-    "deployBastion": {
-      "value": false
-    },
-    "deployAzureGatewaySubnet": {
-      "value": false
-    },
-    "deployWindowsVirtualMachine": {
-      "value": false
-    },
-    "deployLinuxVirtualMachine": {
-      "value": false
-    },
-    "bastionHostSubnetAddressPrefix": {
-      "value": ""
-    },
-    "azureGatewaySubnetAddressPrefix": {
-      "value": ""
-    },
-    "bastionHostPublicIPAddressAvailabilityZones": {
-      "value": []
-    },
-    "hybridUseBenefit": {
-      "value": false
-    },
-    "linuxVmAdminUsername": {
-      "value": ""
-    },
-    "linuxVmAuthenticationType": {},
-    "linuxVmAdminPasswordOrKey": {
-      "value": ""
-    },
-    "linuxVmOsDiskCreateOption": {
-      "value": ""
-    },
-    "linuxVmOsDiskType": {
-      "value": ""
-    },
-    "linuxVmImagePublisher": {},
-    "linuxVmImageOffer": {},
-    "linuxVmImageSku": {
-      "value": ""
-    },
-    "linuxVmSize": {
-      "value": ""
-    },
-    "windowsVmAdminUsername": {
-      "value": ""
-    },
-    "windowsVmAdminPassword": {
-      "value": ""
-    },
-    "windowsVmSize": {
-      "value": ""
-    },
-    "windowsVmPublisher": {
-      "value": ""
-    },
-    "windowsVmOffer": {
-      "value": ""
-    },
-    "windowsVmSku": {},
-    "windowsVmVersion": {
-      "value": ""
-    },
-    "windowsVmCreateOption": {
-      "value": ""
-    },
-    "windowsVmStorageAccountType": {
-      "value": ""
-    },
-    "windowsNetworkInterfacePrivateIPAddressAllocationMethod": {},
-    "deployPolicy": {
-      "value": false
-    },
-    "policy": {},
-    "deployDefender": {
-      "value": false
-    },
-    "defenderSkuTier": {},
-    "emailSecurityContact": {
-      "value": ""
-    },
-    "deployDefenderPlans": {
-      "value": []
     }
   }
 }
