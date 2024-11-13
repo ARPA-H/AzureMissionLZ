@@ -33,4 +33,4 @@ jobs:
             template: ./src/bicep/mlz-arpah.bicep
             parameters: ./src/bicep/parameters/mlz-arpah.parameters.json
             additionalArguments: "--what-if"
-            failOnStdErr: false
+            #failOnStdErr: false
