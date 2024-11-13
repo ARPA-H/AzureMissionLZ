@@ -33,34 +33,34 @@
       "value": {}
     },
     "hubVirtualNetworkAddressPrefix": {
-      "value": ""
+      "value": "10.10.0.0/23"
     },
     "hubSubnetAddressPrefix": {
-      "value": ""
+      "value": "'10.10.0.128/26"
     },
     "firewallClientSubnetAddressPrefix": {
-      "value": ""
+      "value": "10.10.0.0/26"
     },
     "firewallManagementSubnetAddressPrefix": {
-      "value": ""
+      "value": "10.10.0.64/26"
     },
     "identityVirtualNetworkAddressPrefix": {
-      "value": ""
+      "value": "10.10.2.0/24"
     },
     "identitySubnetAddressPrefix": {
-      "value": ""
+      "value": "10.10.2.0/24"
     },
     "operationsVirtualNetworkAddressPrefix": {
-      "value": ""
+      "value": "10.10.3.0/24"
     },
     "operationsSubnetAddressPrefix": {
-      "value": ""
+      "value": "10.10.3.0/24"
     },
     "sharedServicesVirtualNetworkAddressPrefix": {
-      "value": ""
+      "value": "10.10.4.0/24"
     },
     "sharedServicesSubnetAddressPrefix": {
-      "value": ""
+      "value": "10.10.4.0/24'"
     },
     "enableProxy": {
       "value": false
