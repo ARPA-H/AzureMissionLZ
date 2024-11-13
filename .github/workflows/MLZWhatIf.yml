@@ -1,0 +1,36 @@
+name: Mission Landing Zone What-If
+on:
+  pull_request:
+    branches:
+      - main
+ 
+permissions:
+  id-token: write
+  contents: read
+ 
+jobs:
+  What-If:
+    runs-on: windows-latest
+    steps:
+ 
+      - uses: actions/checkout@v4
+ 
+      - name: OIDC Login to Azure Public Cloud
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: MLZ What-If
+        uses: azure/arm-deploy@v2
+        with:
+            scope: subscription
+            #subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+            region: centralus
+            #deploymentMode: 'Validate'
+            template: ./src/bicep/mlz-arpah.bicep
+            parameters: ./src/bicep/parameters/mlz-arpah.parameters.json
+            additionalArguments: "--what-if"
+            failOnStdErr: failOnStdErr
