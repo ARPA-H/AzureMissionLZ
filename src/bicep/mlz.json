@@ -5,11 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.34.60546",
-<<<<<<< HEAD
-      "templateHash": "15343776706780459746"
-=======
       "templateHash": "10985498278931481312"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
     }
   },
   "parameters": {
@@ -892,11 +888,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.31.34.60546",
-<<<<<<< HEAD
-              "templateHash": "10924801470287352076"
-=======
               "templateHash": "10611766626355140285"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
             }
           },
           "parameters": {
@@ -976,11 +968,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.31.34.60546",
-<<<<<<< HEAD
-                      "templateHash": "11992572431768878515"
-=======
                       "templateHash": "14081413975786099842"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
                     }
                   },
                   "parameters": {
@@ -5725,11 +5713,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.31.34.60546",
-<<<<<<< HEAD
-              "templateHash": "12373038860746323248"
-=======
               "templateHash": "16984585606993299502"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
             }
           },
           "parameters": {
@@ -6066,11 +6050,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.31.34.60546",
-<<<<<<< HEAD
-                      "templateHash": "13001914044795164689"
-=======
                       "templateHash": "5051251830280002145"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
                     }
                   },
                   "parameters": {
@@ -6559,11 +6539,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.31.34.60546",
-<<<<<<< HEAD
-                      "templateHash": "16352081091904770478"
-=======
                       "templateHash": "17878952076504304560"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
                     }
                   },
                   "parameters": {
@@ -7016,11 +6992,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.31.34.60546",
-<<<<<<< HEAD
-              "templateHash": "15180554823445581333"
-=======
               "templateHash": "607425685320476557"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
             }
           },
           "parameters": {
@@ -7137,11 +7109,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.31.34.60546",
-<<<<<<< HEAD
-                      "templateHash": "10245709494871874056"
-=======
                       "templateHash": "16149483625562243358"
->>>>>>> 700d0b7 (GitHub Action: Build Bicep to JSON)
                     }
                   },
                   "parameters": {
