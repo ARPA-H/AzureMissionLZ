@@ -9,16 +9,16 @@
       "value": "dev"
     },
     "hubSubscriptionId": {
-      "value": "be826743-b785-4443-bc30-71b375018cec"
+      "value": ""
     },
     "identitySubscriptionId": {
-      "value": "9f63a38b-3e72-4a07-b7b1-bdccbacee761"
+      "value": ""
     },
     "operationsSubscriptionId": {
-      "value": "68f060f2-359f-4cc5-8e3c-7a4970a5a768"
+      "value": ""
     },
     "sharedServicesSubscriptionId": {
-      "value": "f798be4c-cced-4096-b844-b83b518c6b2f"
+      "value": ""
     },
     "location": {
       "value": "CentralUS"
