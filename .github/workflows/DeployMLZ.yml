@@ -20,7 +20,7 @@ jobs:
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
           enable-AzPSSession: true
 
-      - name: MLZ What-If
+      - name: Deploy MLZ
         uses: azure/arm-deploy@v2
         with:
             scope: subscription

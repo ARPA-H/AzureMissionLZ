@@ -475,7 +475,7 @@ param deployDefender bool = true
   'Free'
 ])
 @description('[Standard/Free] The SKU for Defender. It defaults to "Free".')
-param defenderSkuTier string = 'Free'
+param defenderSkuTier string = 'Standard'
 
 @description('Email address of the contact, in the form of john@doe.com')
 param emailSecurityContact string = ''
