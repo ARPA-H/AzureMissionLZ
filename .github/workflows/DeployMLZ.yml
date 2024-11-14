@@ -1,30 +1,46 @@
 name: Deploy Azure MLZ to the ARPA-H Tenant
-
 on:
     workflow_dispatch:
-      
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
+      - uses: actions/checkout@v4
+ 
+      - name: OIDC Login to Azure Public Cloud
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
 
-    - name: Checkout code
-      uses: actions/checkout@main
-
-    - name: Log into Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }} 
-        #enable-AzPSSession: true
-
-    - name: Deploy Bicep file for MLZ
-      uses: azure/arm-deploy@v2
-      with:
-        scope: subscription
-        # subscriptionId: ${{ secrets.AZURE_SUB_ID }}
-        region: eastus2
-        #deploymentMode: 'Validate'
-        template: ./src/bicep/mlz-arpah.bicep
-        parameters: ./src/bicep/parameters/mlz-arpah.parameters.json
-        #parameters: ./workload/bicep/parameters/deploy-baseline-parameters-arpah.json deploymentEnvironment=${{ github.event.inputs.environment }} avdWorkloadSubsId=${{ secrets.AZURE_SUB_ID }} imageGallerySubscriptionId=${{ secrets.IMAGE_GALLERY_SUB_ID }} avdVmLocalUserName=${{ secrets.AVD_ADMIN }} avdVmLocalUserPassword=${{ secrets.AVD_ADMINPASS }} avdEnterpriseAppObjectId=${{ secrets.AZURE_AVD_OBJECTID }} existingVnetAvdSubnetResourceId=${{ secrets.AVD_SUBNET_ID }} existingVnetPrivateEndpointSubnetResourceId=${{ secrets.AVD_SUBNET_ID }} identityDomainName=${{ secrets.AD_NAME}} avdDomainJoinUserName=${{ secrets.AD_JOIN_USER }} avdDomainJoinUserPassword=${{ secrets.AD_JOIN_PASS }} avdOuPath="${{ secrets.AD_OU }}" storageOuPath="${{ secrets.AD_OU }}" storageFilePrivateEndpointStaticIp="${{ secrets.STORAGEFILEPRIVATEENDPOINTSTATICIP }}" storageFilePrivateEndpointStaticIpRemote="${{ secrets.STORAGEFILEPRIVATEENDPOINTSTATICIPREMOTE }}"
-        failOnStdErr: false
+      - name: MLZ What-If
+        uses: azure/arm-deploy@v2
+        with:
+            scope: subscription
+            #subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+            region: centralus
+            #deploymentMode: 'Validate'
+            template: ./src/bicep/mlz-arpah.bicep
+            parameters:
+              resourcePrefix=mlz
+              environmentAbbreviation=dev
+              hubSubscriptionId=${{ secrets.HUB_SUB_ID }} 
+              operationsSubscriptionId=${{ secrets.OPS_SUB_ID }} 
+              sharedServicesSubscriptionId=${{ secrets.SS_SUB_ID }} 
+              hubVirtualNetworkAddressPrefix=${{ secrets.HUB_VNET_PREFIX }} 
+              hubSubnetAddressPrefix=${{ secrets.HUB_SNET_PREFIX }} 
+              operationsVirtualNetworkAddressPrefix=${{ secrets.OPS_VNET_PREFIX }}
+              operationsSubnetAddressPrefix=${{ secrets.OPS_SNET_PREFIX }}
+              sharedServicesVirtualNetworkAddressPrefix=${{ secrets.SS_VNET_PREFIX }}
+              sharedServicesSubnetAddressPrefix=${{ secrets.SS_SNET_PREFIX }}
+              firewallClientSubnetAddressPrefix=${{ secrets.FW_CLIENT_SNET_PREFIX }}
+              firewallManagementSubnetAddressPrefix=${{ secrets.FW_MGMT_SNET_PREFIX }}
+            additionalArguments: "--what-if"
+            failOnStdErr: false
