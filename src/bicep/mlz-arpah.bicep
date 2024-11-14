@@ -7,9 +7,9 @@ targetScope = 'subscription'
 
 // REQUIRED PARAMETERS
 
-@minLength(3)
+@minLength(1)
 @maxLength(6)
-@description('A prefix, 3-6 alphanumeric characters without whitespace, used to prefix resources and generate uniqueness for resources with globally unique naming requirements like Storage Accounts and Log Analytics Workspaces')
+@description('A prefix, 1-6 alphanumeric characters without whitespace, used to prefix resources and generate uniqueness for resources with globally unique naming requirements like Storage Accounts and Log Analytics Workspaces')
 param resourcePrefix string
 
 @allowed([
@@ -24,7 +24,8 @@ param environmentAbbreviation string = 'dev'
 param hubSubscriptionId string = subscription().subscriptionId
 
 @description('The subscription ID for the Identity Network and resources. It defaults to the deployment subscription.')
-param identitySubscriptionId string = subscription().subscriptionId
+//param identitySubscriptionId string = subscription().subscriptionId
+param identitySubscriptionId string = ''
 
 @description('The subscription ID for the Operations Network and resources. It defaults to the deployment subscription.')
 param operationsSubscriptionId string = subscription().subscriptionId
@@ -45,7 +46,7 @@ param supportedClouds array = [
 param deployIdentity bool = false
 
 @description('Choose whether to deploy network watcher for the desired deployment location. Only one network watcher per location can exist in a subscription.')
-param deployNetworkWatcher bool = false
+param deployNetworkWatcher bool = true
 
 // RESOURCE NAMING PARAMETERS
 
@@ -114,7 +115,7 @@ param firewallThreatIntelMode string = 'Alert'
 param firewallIntrusionDetectionMode string = 'Alert'
 
 @description('[true/false] The Azure Firewall DNS Proxy will forward all DNS traffic. When this value is set to true, you must provide a value for "dnsServers"')
-param enableProxy bool = true
+param enableProxy bool = false
 
 @description('''['168.63.129.16'] The Azure Firewall DNS Proxy will forward all DNS traffic. When this value is set to true, you must provide a value for "servers". This should be a comma separated list of IP addresses to forward DNS traffic''')
 param dnsServers array = ['168.63.129.16']
@@ -296,7 +297,7 @@ param sharedServicesNetworkSecurityGroupDiagnosticsMetrics array = []
 // LOGGING PARAMETERS
 
 @description('When set to "true", enables Microsoft Sentinel within the Log Analytics Workspace created in this deployment. It defaults to "false".')
-param deploySentinel bool = false
+param deploySentinel bool = true
 
 @description('The daily quota for Log Analytics Workspace logs in Gigabytes. It defaults to "-1" for no quota.')
 param logAnalyticsWorkspaceCappingDailyQuotaGb int = -1
@@ -474,7 +475,7 @@ param deployDefender bool = true
   'Free'
 ])
 @description('[Standard/Free] The SKU for Defender. It defaults to "Free".')
-param defenderSkuTier string = 'Standard'
+param defenderSkuTier string = 'Free'
 
 @description('Email address of the contact, in the form of john@doe.com')
 param emailSecurityContact string = ''
@@ -725,10 +726,12 @@ module storage 'modules/storage.bicep' = {
     blobsPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.blob
     //deployIdentity: deployIdentity
     deploymentNameSuffix: deploymentNameSuffix
+    filesPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.file
     keyVaultUri: customerManagedKeys.outputs.keyVaultUri
     location: location
     logStorageSkuName: logStorageSkuName
     mlzTags: logic.outputs.mlzTags
+    queuesPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.queue
     resourceGroupNames: resourceGroups.outputs.names
     serviceToken: logic.outputs.tokens.service
     storageEncryptionKeyName: customerManagedKeys.outputs.storageKeyName
