@@ -33,6 +33,8 @@ jobs:
             template: ./src/bicep/mlz-arpah.bicep
             #parameters: ./src/bicep/parameters/mlzarpah.parameters.json hubSubscriptionId=${{ secrets.HUB_SUB_ID }} operationsSubscriptionId=${{ secrets.OPS_SUB_ID }} sharedServicesSubscriptionId=${{ secrets.SS_SUB_ID }} 
             parameters:
+              resourcePrefix='mlz' 
+              environmentAbbreviation='dev' 
               hubSubscriptionId=${{ secrets.HUB_SUB_ID }} 
               operationsSubscriptionId=${{ secrets.OPS_SUB_ID }} 
               sharedServicesSubscriptionId=${{ secrets.SS_SUB_ID }} 
