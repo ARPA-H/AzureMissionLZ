@@ -24,7 +24,8 @@ param environmentAbbreviation string = 'dev'
 param hubSubscriptionId string = subscription().subscriptionId
 
 @description('The subscription ID for the Identity Network and resources. It defaults to the deployment subscription.')
-param identitySubscriptionId string = subscription().subscriptionId
+//param identitySubscriptionId string = subscription().subscriptionId
+param identitySubscriptionId string = ''
 
 @description('The subscription ID for the Operations Network and resources. It defaults to the deployment subscription.')
 param operationsSubscriptionId string = subscription().subscriptionId
