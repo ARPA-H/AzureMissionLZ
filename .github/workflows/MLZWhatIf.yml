@@ -47,4 +47,4 @@ jobs:
               firewallClientSubnetAddressPrefix=${{ secrets.FW_CLIENT_SNET_PREFIX }}
               firewallManagementSubnetAddressPrefix=${{ secrets.FW_MGMT_SNET_PREFIX }}
             additionalArguments: "--what-if"
-            #failOnStdErr: false
+            failOnStdErr: false
