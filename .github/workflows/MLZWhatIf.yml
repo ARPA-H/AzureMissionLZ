@@ -31,6 +31,18 @@ jobs:
             region: centralus
             #deploymentMode: 'Validate'
             template: ./src/bicep/mlz-arpah.bicep
-            parameters: ./src/bicep/parameters/mlz-arpah.parameters.json
+            #parameters: ./src/bicep/parameters/mlzarpah.parameters.json hubSubscriptionId=${{ secrets.HUB_SUB_ID }} operationsSubscriptionId=${{ secrets.OPS_SUB_ID }} sharedServicesSubscriptionId=${{ secrets.SS_SUB_ID }} 
+            parameters:
+              hubSubscriptionId=${{ secrets.HUB_SUB_ID }} 
+              operationsSubscriptionId=${{ secrets.OPS_SUB_ID }} 
+              sharedServicesSubscriptionId=${{ secrets.SS_SUB_ID }} 
+              hubVirtualNetworkAddressPrefix=${{ secrets.HUB_VNET_PREFIX }} 
+              hubSubnetAddressPrefix=${{ secrets.HUB_SNET_PREFIX }} 
+              operationsVirtualNetworkAddressPrefix=${{ secrets.OPS_VNET_PREFIX }}
+              operationsSubnetAddressPrefix=${{ secrets.OPS_SNET_PREFIX }}
+              sharedServicesVirtualNetworkAddressPrefix=${{ secrets.SS_VNET_PREFIX }}
+              sharedServicesSubnetAddressPrefix=${{ secrets.SS_SNET_PREFIX }}
+              firewallClientSubnetAddressPrefix=${{ secrets.FW_CLIENT_SNET_PREFIX }}
+              firewallManagementSubnetAddressPrefix=${{ secrets.FW_MGMT_SNET_PREFIX }}
             additionalArguments: "--what-if"
             #failOnStdErr: false
