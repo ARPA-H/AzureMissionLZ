@@ -27,11 +27,9 @@ jobs:
         uses: azure/arm-deploy@v2
         with:
             scope: subscription
-            #subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
             region: centralus
             #deploymentMode: 'Validate'
             template: ./src/bicep/mlz-arpah.bicep
-            #parameters: ./src/bicep/parameters/mlzarpah.parameters.json hubSubscriptionId=${{ secrets.HUB_SUB_ID }} operationsSubscriptionId=${{ secrets.OPS_SUB_ID }} sharedServicesSubscriptionId=${{ secrets.SS_SUB_ID }} 
             parameters:
               resourcePrefix=mlz
               environmentAbbreviation=dev
@@ -46,5 +44,7 @@ jobs:
               sharedServicesSubnetAddressPrefix=${{ secrets.SS_SNET_PREFIX }}
               firewallClientSubnetAddressPrefix=${{ secrets.FW_CLIENT_SNET_PREFIX }}
               firewallManagementSubnetAddressPrefix=${{ secrets.FW_MGMT_SNET_PREFIX }}
+              bastionHostSubnetAddressPrefix=${{ secrets.BASTION_SNET_PREFIX }}
+              windowsVmAdminPassword=${{ secrets.WIN_VM_ADMIN_PWD }}
             additionalArguments: "--what-if"
             failOnStdErr: false
