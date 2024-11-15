@@ -332,7 +332,7 @@ param bastionDiagnosticsLogs array = [
 ]
 
 @description('When set to "true", provisions Azure Bastion Host only. It defaults to "false".')
-param deployBastion bool = false
+param deployBastion bool = true
 
 @description('When set to "true", provisions Azure Gateway Subnet only. It defaults to "false".')
 param deployAzureGatewaySubnet bool = false
