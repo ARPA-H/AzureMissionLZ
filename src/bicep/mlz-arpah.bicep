@@ -338,7 +338,7 @@ param deployBastion bool = false
 param deployAzureGatewaySubnet bool = false
 
 @description('When set to "true", provisions Windows Virtual Machine Host only. It defaults to "false".')
-param deployWindowsVirtualMachine bool = false
+param deployWindowsVirtualMachine bool = true
 
 @description('When set to "true", provisions Linux Virtual Machine Host only. It defaults to "false".')
 param deployLinuxVirtualMachine bool = false
@@ -454,7 +454,7 @@ param windowsNetworkInterfacePrivateIPAddressAllocationMethod string = 'Dynamic'
 // POLICY PARAMETERS
 
 @description('When set to "true", deploys the Azure Policy set defined at by the parameter "policy" to the resource groups generated in the deployment. It defaults to "false".')
-param deployPolicy bool = false
+param deployPolicy bool = true
 
 @allowed([
   'NISTRev4'
