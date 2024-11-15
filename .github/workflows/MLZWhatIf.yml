@@ -45,5 +45,6 @@ jobs:
               firewallClientSubnetAddressPrefix=${{ secrets.FW_CLIENT_SNET_PREFIX }}
               firewallManagementSubnetAddressPrefix=${{ secrets.FW_MGMT_SNET_PREFIX }}
               bastionHostSubnetAddressPrefix=${{ secrets.BASTION_SNET_PREFIX }}
+              windowsVmAdminPassword=${{ secrets.WIN_VM_ADMIN_PWD }}
             additionalArguments: "--what-if"
             failOnStdErr: false
