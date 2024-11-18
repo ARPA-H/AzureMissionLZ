@@ -569,7 +569,7 @@ var networks = union([
 
 // LOGIC FOR DEPLOYMENTS
 
-module logic 'modules/logic.bicep' = {
+module logic 'modules/logic-arpah.bicep' = {
   name: 'get-logic-${deploymentNameSuffix}'
   params: {
     deploymentNameSuffix: deploymentNameSuffix
