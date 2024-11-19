@@ -25,7 +25,7 @@ jobs:
         with:
             scope: subscription
             region: centralus
-            #deploymentMode: 'Validate'
+            #deploymentMode: 'Complete'
             template: ./src/bicep/mlz-arpah.bicep
             parameters:
               resourcePrefix=mlz
