@@ -17,7 +17,7 @@ param tokens object = {
   service: 'service_token'
 }
 
-var locations = loadJsonContent('../data/locations.json')[environment().name]
+var locations = loadJsonContent('../data/locations-arpah.json')[environment().name]
 var locationAbbreviation = locations[location].abbreviation
 var resourceAbbreviations = loadJsonContent('../data/resourceAbbreviations.json')
 

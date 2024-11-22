@@ -1,0 +1,58 @@
+{
+    "AzureCloud": {
+        "centralus": {
+            "abbreviation": "usc",
+            "recoveryServicesGeo": "cus",
+            "timeDifference": "-6:00",
+            "timeZone": "Central Standard Time"
+        },
+        "eastus": {
+            "abbreviation": "use",
+            "recoveryServicesGeo": "eus",
+            "timeDifference": "-5:00",
+            "timeZone": "Eastern Standard Time"
+        },
+        "eastus2": {
+            "abbreviation": "use2",
+            "recoveryServicesGeo": "eus2",
+            "timeDifference": "-5:00",
+            "timeZone": "Eastern Standard Time"
+        },
+        "northcentralus": {
+            "abbreviation": "usnc",
+            "recoveryServicesGeo": "ncus",
+            "timeDifference": "-6:00",
+            "timeZone": "Central Standard Time"
+        },
+        "southcentralus": {
+            "abbreviation": "ussc",
+            "recoveryServicesGeo": "scus",
+            "timeDifference": "-6:00",
+            "timeZone": "Central Standard Time"
+        },
+        "westcentralus": {
+            "abbreviation": "uswc",
+            "recoveryServicesGeo": "wcus",
+            "timeDifference": "-7:00",
+            "timeZone": "Mountain Standard Time"
+        },
+        "westus": {
+            "abbreviation": "usw",
+            "recoveryServicesGeo": "wus",
+            "timeDifference": "-8:00",
+            "timeZone": "Pacific Standard Time"
+        },
+        "westus2": {
+            "abbreviation": "usw2",
+            "recoveryServicesGeo": "wus2",
+            "timeDifference": "-8:00",
+            "timeZone": "Pacific Standard Time"
+        },
+        "westus3": {
+            "abbreviation": "usw3",
+            "recoveryServicesGeo": "wus3",
+            "timeDifference": "-7:00",
+            "timeZone": "Mountain Standard Time"
+        }
+    }
+}

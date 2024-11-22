@@ -18,7 +18,7 @@ param resourcePrefix string
   'test'
 ])
 @description('The abbreviation for the environment.')
-param environmentAbbreviation string = 'dev'
+param environmentAbbreviation string = 'prod'
 
 @description('The subscription ID for the Hub Network and resources. It defaults to the deployment subscription.')
 param hubSubscriptionId string = subscription().subscriptionId
@@ -338,7 +338,7 @@ param deployBastion bool = true
 param deployAzureGatewaySubnet bool = false
 
 @description('When set to "true", provisions Windows Virtual Machine Host only. It defaults to "false".')
-param deployWindowsVirtualMachine bool = true
+param deployWindowsVirtualMachine bool = false
 
 @description('When set to "true", provisions Linux Virtual Machine Host only. It defaults to "false".')
 param deployLinuxVirtualMachine bool = false
@@ -670,7 +670,7 @@ module monitoring 'modules/monitoring.bicep' = {
 
 // REMOTE ACCESS
 
-module remoteAccess 'modules/remote-access.bicep' = {
+module remoteAccess 'modules/remote-access-arpah.bicep' = {
     name: 'deploy-remote-access-${deploymentNameSuffix}'
     params: {
       bastionHostPublicIPAddressAllocationMethod: 'Static'
