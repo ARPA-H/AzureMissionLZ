@@ -34,20 +34,20 @@ module keyVault 'key-vault-arpah.bicep' = {
   }
 }
 
-// module diskEncryptionSet 'disk-encryption-set.bicep' = {
-//   name: 'deploy-des-${workloadShortName}-${deploymentNameSuffix}'
-//   scope: resourceGroup(tier.subscriptionId, resourceGroupName)
-//   params: {
-//     deploymentNameSuffix: deploymentNameSuffix
-//     diskEncryptionSetName: tier.namingConvention.diskEncryptionSet
-//     keyUrl: keyVault.outputs.keyUriWithVersion
-//     keyVaultResourceId: keyVault.outputs.keyVaultResourceId
-//     location: location
-//     mlzTags: mlzTags
-//     tags: contains(tags, 'Microsoft.Compute/diskEncryptionSets') ? tags['Microsoft.Compute/diskEncryptionSets'] : {}
-//     workloadShortName: workloadShortName
-//   }
-// }
+module diskEncryptionSet 'disk-encryption-set.bicep' = {
+  name: 'deploy-des-${workloadShortName}-${deploymentNameSuffix}'
+  scope: resourceGroup(tier.subscriptionId, resourceGroupName)
+  params: {
+    deploymentNameSuffix: deploymentNameSuffix
+    diskEncryptionSetName: tier.namingConvention.diskEncryptionSet
+    keyUrl: keyVault.outputs.keyUriWithVersion
+    keyVaultResourceId: keyVault.outputs.keyVaultResourceId
+    location: location
+    mlzTags: mlzTags
+    tags: contains(tags, 'Microsoft.Compute/diskEncryptionSets') ? tags['Microsoft.Compute/diskEncryptionSets'] : {}
+    workloadShortName: workloadShortName
+  }
+}
 
 module userAssignedIdentity 'user-assigned-identity.bicep' = {
   name: 'deploy-id-${workloadShortName}-${deploymentNameSuffix}'
@@ -61,9 +61,9 @@ module userAssignedIdentity 'user-assigned-identity.bicep' = {
   }
 }
 
-//output diskEncryptionSetResourceId string = diskEncryptionSet.outputs.resourceId
+output diskEncryptionSetResourceId string = diskEncryptionSet.outputs.resourceId
 output keyVaultName string = keyVault.outputs.keyVaultName
 output keyVaultUri string = keyVault.outputs.keyVaultUri
 output keyVaultResourceId string = keyVault.outputs.keyVaultResourceId
-//output storageKeyName string = keyVault.outputs.storageKeyName
+output storageKeyName string = keyVault.outputs.storageKeyName
 output userAssignedIdentityResourceId string = userAssignedIdentity.outputs.resourceId
