@@ -9,7 +9,7 @@ param environmentAbbreviation string
 param location string
 param networkName string
 param networkShortName string
-param resourcePrefix string
+//param resourcePrefix string = 'test'
 param stampIndex string = '' // Optional: Added to support AVD deployments
 param tokens object = {
   purpose:'purpose_token'
@@ -40,7 +40,8 @@ var resourceAbbreviations = loadJsonContent('../data/resourceAbbreviations.json'
 //var namingConvention = '${toLower(resourcePrefix)}-${empty(stampIndex) ? '' : '${stampIndex}-'}${tokens.resource}-${networkName}-${locationAbbreviation}-${environmentAbbreviation}'
 var namingConvention = '${tokens.resource}-${networkName}-${locationAbbreviation}-${environmentAbbreviation}'
 var namingConventionVnet = '${tokens.resource}-arpa-h-it-${networkShortName}-${locationAbbreviation}'
-var namingConvention_Service = '${toLower(resourcePrefix)}-${empty(stampIndex) ? '' : '${stampIndex}-'}${tokens.resource}-${networkName}-${tokens.service}-${locationAbbreviation}-${environmentAbbreviation}'
+//var namingConvention_Service = '${toLower(resourcePrefix)}-${empty(stampIndex) ? '' : '${stampIndex}-'}${tokens.resource}-${networkName}-${tokens.service}-${locationAbbreviation}-${environmentAbbreviation}'
+var namingConvention_Service = '${tokens.resource}-${networkName}-${tokens.service}-${locationAbbreviation}-${environmentAbbreviation}'
 
 /*
 

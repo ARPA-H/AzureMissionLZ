@@ -630,7 +630,7 @@ module networking 'modules/networking.bicep' = {
 
 // CUSTOMER MANAGED KEYS
 
-module customerManagedKeys 'modules/customer-managed-keys.bicep' = {
+module customerManagedKeys 'modules/customer-managed-keys-arpah.bicep' = {
   name: 'deploy-cmk-hub-${deploymentNameSuffix}'
   params: {
     deploymentNameSuffix: deploymentNameSuffix
@@ -638,7 +638,7 @@ module customerManagedKeys 'modules/customer-managed-keys.bicep' = {
     keyVaultPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.keyVault
     location: location
     mlzTags: logic.outputs.mlzTags
-    resourceAbbreviations: logic.outputs.resourceAbbreviations
+    //resourceAbbreviations: logic.outputs.resourceAbbreviations
     resourceGroupName: filter(resourceGroups.outputs.names, name => contains(name, 'hub'))[0]
     subnetResourceId: networking.outputs.hubSubnetResourceId
     tags: tags
