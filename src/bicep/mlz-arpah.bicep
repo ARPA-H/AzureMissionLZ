@@ -554,7 +554,7 @@ var networks = union([
 ], deployIdentity ? [
   {
     name: 'identity'
-    shortName: 'id'
+    shortName: 'iam'
     deployUniqueResources: contains([ hubSubscriptionId, operationsSubscriptionId, sharedServicesSubscriptionId ], identitySubscriptionId) ? false : true
     subscriptionId: identitySubscriptionId
     nsgDiagLogs: identityNetworkSecurityGroupDiagnosticsLogs
