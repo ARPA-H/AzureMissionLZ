@@ -18,7 +18,7 @@ param resourcePrefix string
   'test'
 ])
 @description('The abbreviation for the environment.')
-param environmentAbbreviation string = 'dev'
+param environmentAbbreviation string = 'prod'
 
 @description('The subscription ID for the Hub Network and resources. It defaults to the deployment subscription.')
 param hubSubscriptionId string = subscription().subscriptionId
@@ -230,17 +230,17 @@ param identityNetworkSecurityGroupDiagnosticsLogs array = [
 param identityNetworkSecurityGroupDiagnosticsMetrics array = []
 
 // KEY VAULT PARAMETERS
-@description('An array of Key Vault Diagnostic Logs categories to collect. See "https://learn.microsoft.com/en-us/azure/key-vault/general/logging?tabs=Vault" for valid values.')
-param keyVaultDiagnosticsLogs array = [
-  {
-    category: 'AuditEvent'
-    enabled: true
-  }
-  {
-    category: 'AzurePolicyEvaluationDetails'
-    enabled: true
-  }
-]
+// @description('An array of Key Vault Diagnostic Logs categories to collect. See "https://learn.microsoft.com/en-us/azure/key-vault/general/logging?tabs=Vault" for valid values.')
+// param keyVaultDiagnosticsLogs array = [
+//   {
+//     category: 'AuditEvent'
+//     enabled: true
+//   }
+//   {
+//     category: 'AzurePolicyEvaluationDetails'
+//     enabled: true
+//   }
+// ]
 
 // OPERATIONS PARAMETERS
 
@@ -338,10 +338,10 @@ param deployBastion bool = true
 param deployAzureGatewaySubnet bool = false
 
 @description('When set to "true", provisions Windows Virtual Machine Host only. It defaults to "false".')
-param deployWindowsVirtualMachine bool = true
+param deployWindowsVirtualMachine bool = false
 
-@description('When set to "true", provisions Linux Virtual Machine Host only. It defaults to "false".')
-param deployLinuxVirtualMachine bool = false
+// @description('When set to "true", provisions Linux Virtual Machine Host only. It defaults to "false".')
+// param deployLinuxVirtualMachine bool = false
 
 @description('The CIDR Subnet Address Prefix for the Azure Bastion Subnet. It must be in the Hub Virtual Network space "hubVirtualNetworkAddressPrefix" parameter value. It must be /27 or larger.')
 param bastionHostSubnetAddressPrefix string = '10.0.128.192/26'
@@ -357,57 +357,57 @@ param hybridUseBenefit bool = false
 
 // LINUX VIRTUAL MACHINE PARAMETERS
 
-@description('The administrator username for the Linux Virtual Machine to Azure Bastion remote into. It defaults to "azureuser".')
-param linuxVmAdminUsername string = 'azureuser'
+// @description('The administrator username for the Linux Virtual Machine to Azure Bastion remote into. It defaults to "azureuser".')
+// param linuxVmAdminUsername string = 'azureuser'
 
-@allowed([
-  'sshPublicKey'
-  'password'
-])
-@description('[sshPublicKey/password] The authentication type for the Linux Virtual Machine to Azure Bastion remote into. It defaults to "password".')
-param linuxVmAuthenticationType string = 'password'
+// @allowed([
+//   'sshPublicKey'
+//   'password'
+// ])
+// @description('[sshPublicKey/password] The authentication type for the Linux Virtual Machine to Azure Bastion remote into. It defaults to "password".')
+// param linuxVmAuthenticationType string = 'password'
 
-@minLength(12)
-@secure()
-@description('The administrator password or public SSH key for the Linux Virtual Machine to Azure Bastion remote into. See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm- for password requirements.')
-param linuxVmAdminPasswordOrKey string = deployLinuxVirtualMachine ? '' : newGuid()
+// @minLength(12)
+// @secure()
+// @description('The administrator password or public SSH key for the Linux Virtual Machine to Azure Bastion remote into. See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm- for password requirements.')
+// param linuxVmAdminPasswordOrKey string = deployLinuxVirtualMachine ? '' : newGuid()
 
-@description('The disk creation option of the Linux Virtual Machine to Azure Bastion remote into. It defaults to "FromImage".')
-param linuxVmOsDiskCreateOption string = 'FromImage'
+// @description('The disk creation option of the Linux Virtual Machine to Azure Bastion remote into. It defaults to "FromImage".')
+// param linuxVmOsDiskCreateOption string = 'FromImage'
 
-@description('The disk type of the Linux Virtual Machine to Azure Bastion remote into. It defaults to "Standard_LRS".')
-param linuxVmOsDiskType string = 'Standard_LRS'
+// @description('The disk type of the Linux Virtual Machine to Azure Bastion remote into. It defaults to "Standard_LRS".')
+// param linuxVmOsDiskType string = 'Standard_LRS'
 
-@allowed([
-  'Canonical'
-  'RedHat'
-  'Debian'
-])
-@description('[Canonical for Ubuntu/RedHat/Debian] The available Linux Publishers')
-param linuxVmImagePublisher string = 'Canonical'
+// @allowed([
+//   'Canonical'
+//   'RedHat'
+//   'Debian'
+// ])
+// @description('[Canonical for Ubuntu/RedHat/Debian] The available Linux Publishers')
+// param linuxVmImagePublisher string = 'Canonical'
 
-@allowed([
-  'ubuntuserver'
-  '0001-com-ubuntu-server-focal'
-  '0001-com-ubuntu-server-jammy'
-  'RHEL'
-  'Debian-12'
-])
-@description('[Ubuntu/RHEL/Debian-12] The available Linux Offers')
-param linuxVmImageOffer string = '0001-com-ubuntu-server-focal'
+// @allowed([
+//   'ubuntuserver'
+//   '0001-com-ubuntu-server-focal'
+//   '0001-com-ubuntu-server-jammy'
+//   'RHEL'
+//   'Debian-12'
+// ])
+// @description('[Ubuntu/RHEL/Debian-12] The available Linux Offers')
+// param linuxVmImageOffer string = '0001-com-ubuntu-server-focal'
 
-@description('The SKU of the Linux marketplace image.')
-param linuxVmImageSku string = '20_04-lts-gen2'
+// @description('The SKU of the Linux marketplace image.')
+// param linuxVmImageSku string = '20_04-lts-gen2'
 
-@description('The size of the Linux virtual machine.')
-param linuxVmSize string = 'Standard_D2s_v3'
+// @description('The size of the Linux virtual machine.')
+// param linuxVmSize string = 'Standard_D2s_v3'
 
-@allowed([
-  'Static'
-  'Dynamic'
-])
-@description('[Static/Dynamic] The public IP Address allocation method for the Linux virtual machine. It defaults to "Dynamic".')
-param linuxNetworkInterfacePrivateIPAddressAllocationMethod string = 'Dynamic'
+// @allowed([
+//   'Static'
+//   'Dynamic'
+// ])
+// @description('[Static/Dynamic] The public IP Address allocation method for the Linux virtual machine. It defaults to "Dynamic".')
+// param linuxNetworkInterfacePrivateIPAddressAllocationMethod string = 'Dynamic'
 
 // WINDOWS VIRTUAL MACHINE PARAMETERS
 
@@ -554,7 +554,7 @@ var networks = union([
 ], deployIdentity ? [
   {
     name: 'identity'
-    shortName: 'id'
+    shortName: 'iam'
     deployUniqueResources: contains([ hubSubscriptionId, operationsSubscriptionId, sharedServicesSubscriptionId ], identitySubscriptionId) ? false : true
     subscriptionId: identitySubscriptionId
     nsgDiagLogs: identityNetworkSecurityGroupDiagnosticsLogs
@@ -630,17 +630,17 @@ module networking 'modules/networking.bicep' = {
 
 // CUSTOMER MANAGED KEYS
 
-module customerManagedKeys 'modules/customer-managed-keys.bicep' = {
+module customerManagedKeys 'modules/customer-managed-keys-arpah.bicep' = {
   name: 'deploy-cmk-hub-${deploymentNameSuffix}'
   params: {
     deploymentNameSuffix: deploymentNameSuffix
-    environmentAbbreviation: environmentAbbreviation
-    keyVaultPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.keyVault
+    // environmentAbbreviation: environmentAbbreviation
+    // keyVaultPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.keyVault
     location: location
     mlzTags: logic.outputs.mlzTags
-    resourceAbbreviations: logic.outputs.resourceAbbreviations
+    //resourceAbbreviations: logic.outputs.resourceAbbreviations
     resourceGroupName: filter(resourceGroups.outputs.names, name => contains(name, 'hub'))[0]
-    subnetResourceId: networking.outputs.hubSubnetResourceId
+    //subnetResourceId: networking.outputs.hubSubnetResourceId
     tags: tags
     tier: filter(logic.outputs.tiers, tier => tier.name == 'hub')[0]
     tokens: logic.outputs.tokens
@@ -670,7 +670,7 @@ module monitoring 'modules/monitoring.bicep' = {
 
 // REMOTE ACCESS
 
-module remoteAccess 'modules/remote-access.bicep' = {
+module remoteAccess 'modules/remote-access-arpah.bicep' = {
     name: 'deploy-remote-access-${deploymentNameSuffix}'
     params: {
       bastionHostPublicIPAddressAllocationMethod: 'Static'
@@ -678,24 +678,24 @@ module remoteAccess 'modules/remote-access.bicep' = {
       bastionHostPublicIPAddressSkuName: 'Standard'
       bastionHostSubnetResourceId: networking.outputs.bastionHostSubnetResourceId
       deployBastion: deployBastion
-      deployLinuxVirtualMachine: deployLinuxVirtualMachine
+      //deployLinuxVirtualMachine: deployLinuxVirtualMachine
       deployWindowsVirtualMachine: deployWindowsVirtualMachine
-      diskEncryptionSetResourceId: customerManagedKeys.outputs.diskEncryptionSetResourceId
+      //diskEncryptionSetResourceId: customerManagedKeys.outputs.diskEncryptionSetResourceId
       hub: filter(logic.outputs.tiers, tier => tier.name == 'hub')[0]
       hubNetworkSecurityGroupResourceId: networking.outputs.hubNetworkSecurityGroupResourceId
       hubResourceGroupName: filter(resourceGroups.outputs.names, name => contains(name, 'hub'))[0]
       hubSubnetResourceId: networking.outputs.hubSubnetResourceId
       hybridUseBenefit: hybridUseBenefit
-      linuxNetworkInterfacePrivateIPAddressAllocationMethod: linuxNetworkInterfacePrivateIPAddressAllocationMethod
-      linuxVmAdminPasswordOrKey: linuxVmAdminPasswordOrKey
-      linuxVmAdminUsername: linuxVmAdminUsername
-      linuxVmImagePublisher: linuxVmImagePublisher
-      linuxVmImageOffer: linuxVmImageOffer
-      linuxVmImageSku: linuxVmImageSku
-      linuxVmSize: linuxVmSize
-      linuxVmAuthenticationType: linuxVmAuthenticationType
-      linuxVmOsDiskCreateOption: linuxVmOsDiskCreateOption
-      linuxVmOsDiskType: linuxVmOsDiskType
+      // linuxNetworkInterfacePrivateIPAddressAllocationMethod: linuxNetworkInterfacePrivateIPAddressAllocationMethod
+      // linuxVmAdminPasswordOrKey: linuxVmAdminPasswordOrKey
+      // linuxVmAdminUsername: linuxVmAdminUsername
+      // linuxVmImagePublisher: linuxVmImagePublisher
+      // linuxVmImageOffer: linuxVmImageOffer
+      // linuxVmImageSku: linuxVmImageSku
+      // linuxVmSize: linuxVmSize
+      // linuxVmAuthenticationType: linuxVmAuthenticationType
+      // linuxVmOsDiskCreateOption: linuxVmOsDiskCreateOption
+      // linuxVmOsDiskType: linuxVmOsDiskType
       location: location
       logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceResourceId
       mlzTags: logic.outputs.mlzTags
@@ -720,21 +720,21 @@ module remoteAccess 'modules/remote-access.bicep' = {
 
 // STORAGE FOR LOGGING
 
-module storage 'modules/storage.bicep' = {
+module storage 'modules/storage-arpah.bicep' = {
   name: 'deploy-log-storage-${deploymentNameSuffix}'
   params: {
     blobsPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.blob
     //deployIdentity: deployIdentity
     deploymentNameSuffix: deploymentNameSuffix
     filesPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.file
-    keyVaultUri: customerManagedKeys.outputs.keyVaultUri
+    //keyVaultUri: customerManagedKeys.outputs.keyVaultUri
     location: location
     logStorageSkuName: logStorageSkuName
     mlzTags: logic.outputs.mlzTags
     queuesPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.queue
     resourceGroupNames: resourceGroups.outputs.names
-    serviceToken: logic.outputs.tokens.service
-    storageEncryptionKeyName: customerManagedKeys.outputs.storageKeyName
+    //serviceToken: logic.outputs.tokens.service
+    //storageEncryptionKeyName: customerManagedKeys.outputs.storageKeyName
     tablesPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.table
     tags: tags
     tiers: logic.outputs.tiers
@@ -747,7 +747,7 @@ module storage 'modules/storage.bicep' = {
 
 // DIAGONSTIC LOGGING
 
-module diagnostics 'modules/diagnostics.bicep' = {
+module diagnostics 'modules/diagnostics-arpah.bicep' = {
   name: 'deploy-resource-diag-${deploymentNameSuffix}'
   params: {
     bastionDiagnosticsLogs: bastionDiagnosticsLogs
@@ -755,8 +755,8 @@ module diagnostics 'modules/diagnostics.bicep' = {
     deploymentNameSuffix: deploymentNameSuffix
     firewallDiagnosticsLogs: firewallDiagnosticsLogs
     firewallDiagnosticsMetrics: firewallDiagnosticsMetrics
-    keyVaultName: customerManagedKeys.outputs.keyVaultName
-    keyVaultDiagnosticLogs: keyVaultDiagnosticsLogs
+    //keyVaultName: customerManagedKeys.outputs.keyVaultName
+    //keyVaultDiagnosticLogs: keyVaultDiagnosticsLogs
     logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceResourceId
     publicIPAddressDiagnosticsLogs: publicIPAddressDiagnosticsLogs
     publicIPAddressDiagnosticsMetrics: publicIPAddressDiagnosticsMetrics
@@ -802,7 +802,7 @@ module defenderforClouds 'modules/defender-for-clouds.bicep' =
   }
 
 output azureFirewallResourceId string = networking.outputs.azureFirewallResourceId
-output diskEncryptionSetResourceId string = customerManagedKeys.outputs.diskEncryptionSetResourceId
+//output diskEncryptionSetResourceId string = customerManagedKeys.outputs.diskEncryptionSetResourceId
 output hubVirtualNetworkResourceId string = networking.outputs.hubVirtualNetworkResourceId
 output identitySubnetResourceId string = networking.outputs.identitySubnetResourceId
 output locationProperties object = logic.outputs.locationProperties

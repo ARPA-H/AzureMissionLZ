@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "deployActivityLogDiagnosticSetting": {
+      "value": false
+    },
+    "deployDefender": {
+      "value": false
+    },
+    "deployNetworkWatcher": {
+      "value": false
+    },
+    "deployPolicy": {
+      "value": false
+    },
+    "emailSecurityContact": {
+      "value": ""
+    },
+    "firewallResourceId": {
+      "value": ""
+    },
+    "hubVirtualNetworkResourceId": {
+      "value": ""
+    },
+    "identifier": {
+      "value": ""
+    },
+    "logAnalyticsWorkspaceResourceId": {
+      "value": ""
+    }
+  }
+}

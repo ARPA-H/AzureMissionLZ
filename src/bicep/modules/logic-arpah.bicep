@@ -37,7 +37,7 @@ module namingConventions 'naming-convention-arpah.bicep' = [for network in netwo
     location: location
     networkName: network.name
     networkShortName: network.shortName
-    resourcePrefix: resourcePrefix
+    //resourcePrefix: resourcePrefix
     stampIndex: stampIndex
   }
 }]

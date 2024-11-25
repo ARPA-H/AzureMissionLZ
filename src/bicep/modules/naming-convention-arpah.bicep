@@ -9,7 +9,7 @@ param environmentAbbreviation string
 param location string
 param networkName string
 param networkShortName string
-param resourcePrefix string
+//param resourcePrefix string = 'test'
 param stampIndex string = '' // Optional: Added to support AVD deployments
 param tokens object = {
   purpose:'purpose_token'
@@ -17,7 +17,7 @@ param tokens object = {
   service: 'service_token'
 }
 
-var locations = loadJsonContent('../data/locations.json')[environment().name]
+var locations = loadJsonContent('../data/locations-arpah.json')[environment().name]
 var locationAbbreviation = locations[location].abbreviation
 var resourceAbbreviations = loadJsonContent('../data/resourceAbbreviations.json')
 
@@ -38,9 +38,11 @@ var resourceAbbreviations = loadJsonContent('../data/resourceAbbreviations.json'
 */
 
 //var namingConvention = '${toLower(resourcePrefix)}-${empty(stampIndex) ? '' : '${stampIndex}-'}${tokens.resource}-${networkName}-${locationAbbreviation}-${environmentAbbreviation}'
-var namingConvention = '${tokens.resource}-${networkName}-${locationAbbreviation}-${environmentAbbreviation}'
+var namingConvention = '${tokens.resource}-${networkName}-${locationAbbreviation}'
 var namingConventionVnet = '${tokens.resource}-arpa-h-it-${networkShortName}-${locationAbbreviation}'
-var namingConvention_Service = '${toLower(resourcePrefix)}-${empty(stampIndex) ? '' : '${stampIndex}-'}${tokens.resource}-${networkName}-${tokens.service}-${locationAbbreviation}-${environmentAbbreviation}'
+//var namingConvention_Service = '${toLower(resourcePrefix)}-${empty(stampIndex) ? '' : '${stampIndex}-'}${tokens.resource}-${networkName}-${tokens.service}-${locationAbbreviation}-${environmentAbbreviation}'
+//var namingConvention_Service = '${tokens.resource}-${networkName}-${tokens.service}-${locationAbbreviation}-${environmentAbbreviation}'
+var namingConvention_Service = '${tokens.resource}-${networkName}-${tokens.service}-${locationAbbreviation}'
 
 /*
 
@@ -112,7 +114,8 @@ var names = {
   routeTable: replace(namingConvention, tokens.resource, resourceAbbreviations.routeTables)
   scalingPlan: replace(namingConvention, tokens.resource, resourceAbbreviations.scalingPlans)
   scalingPlanDiagnosticSetting: replace(replace(namingConvention_Service, tokens.resource, resourceAbbreviations.diagnosticSettings), tokens.service, resourceAbbreviations.scalingPlans)
-  storageAccount: replace(replace(namingConvention_Service, tokens.resource, resourceAbbreviations.storageAccounts), networkName, networkShortName)
+  //storageAccount: replace(replace(namingConvention_Service, tokens.resource, resourceAbbreviations.storageAccounts), networkName, networkShortName)
+  storageAccount: '${resourceAbbreviations.storageAccounts}${networkShortName}log${locationAbbreviation}'
   storageAccountDiagnosticSetting: replace(replace(namingConvention_Service, tokens.resource, resourceAbbreviations.diagnosticSettings), tokens.service, '${tokens.service}-${resourceAbbreviations.storageAccounts}')
   storageAccountBlobNetworkInterface: replace(replace(namingConvention_Service, tokens.resource, resourceAbbreviations.networkInterfaces), tokens.service, '${resourceAbbreviations.storageAccounts}-blob')
   storageAccountFileNetworkInterface: replace(replace(namingConvention_Service, tokens.resource, resourceAbbreviations.networkInterfaces), tokens.service, '${resourceAbbreviations.storageAccounts}-file')
