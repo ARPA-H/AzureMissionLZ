@@ -115,10 +115,11 @@ param firewallThreatIntelMode string = 'Alert'
 param firewallIntrusionDetectionMode string = 'Alert'
 
 @description('[true/false] The Azure Firewall DNS Proxy will forward all DNS traffic. When this value is set to true, you must provide a value for "dnsServers"')
-param enableProxy bool = false
+param enableProxy bool = true
 
 @description('''['168.63.129.16'] The Azure Firewall DNS Proxy will forward all DNS traffic. When this value is set to true, you must provide a value for "servers". This should be a comma separated list of IP addresses to forward DNS traffic''')
-param dnsServers array = ['168.63.129.16']
+//param dnsServers array = ['168.63.129.16']
+param dnsServers array = []
 
 @description('An array of Firewall Diagnostic Logs categories to collect. See "https://docs.microsoft.com/en-us/azure/firewall/firewall-diagnostics#enable-diagnostic-logging-through-the-azure-portal" for valid values.')
 param firewallDiagnosticsLogs array = [
