@@ -597,7 +597,7 @@ module resourceGroups 'modules/resource-groups.bicep' = {
 
 // NETWORKING
 
-module networking 'modules/networking-arpah.bicep' = {
+module networking 'modules/networking.bicep' = {
   name: 'deploy-networking-${deploymentNameSuffix}'
   params: {
     bastionHostSubnetAddressPrefix: bastionHostSubnetAddressPrefix
