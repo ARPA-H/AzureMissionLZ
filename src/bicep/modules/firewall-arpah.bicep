@@ -8,7 +8,7 @@ param clientIpConfigurationPublicIPAddressResourceId string
 param dnsServers array
 param enableProxy bool
 param firewallPolicyName string
-param firewallSupernetIPAddress string
+//param firewallSupernetIPAddress string
 @allowed([
   'Alert'
   'Deny'
@@ -34,6 +34,8 @@ param tags object = {}
 ])
 param threatIntelMode string
 
+param spokeVnetAddresses array
+
 var intrusionDetectionObject = {
   mode: intrusionDetectionMode
 }
@@ -53,7 +55,6 @@ resource firewallPolicy 'Microsoft.Network/firewallPolicies@2021-02-01' = {
     sku: {
       tier: skuTier
     }
-    //dnsSettings: null
     dnsSettings: ((skuTier == 'Premium' || skuTier == 'Standard') ? dnsSettings : null)
   }
 }
@@ -99,6 +100,15 @@ resource firewallAppRuleCollectionGroup 'Microsoft.Network/firewallPolicies/rule
       }
     ]
   }
+}
+
+resource ipGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
+  location: location
+  name: 'ipg-mlz-spokes'
+  properties: {
+    ipAddresses: spokeVnetAddresses
+  }
+  tags: mlzTags
 }
 
 resource firewallNetworkRuleCollectionGroup 'Microsoft.Network/firewallPolicies/ruleCollectionGroups@2021-02-01' = {
@@ -151,10 +161,12 @@ resource firewallNetworkRuleCollectionGroup 'Microsoft.Network/firewallPolicies/
             ipProtocols: [
               'Any'
             ]
-            sourceAddresses: [
-              firewallSupernetIPAddress
+            // sourceAddresses: [
+            //   firewallSupernetIPAddress
+            // ]
+            sourceIpGroups: [
+              ipGroup.id
             ]
-            sourceIpGroups: []
             destinationAddresses: [
               '*'
             ]
