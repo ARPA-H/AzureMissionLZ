@@ -102,11 +102,24 @@ resource firewallAppRuleCollectionGroup 'Microsoft.Network/firewallPolicies/rule
   }
 }
 
-resource ipGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
+resource mlzIpGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
   location: location
   name: 'ipg-mlz-spokes'
   properties: {
     ipAddresses: spokeVnetAddresses
+  }
+  tags: mlzTags
+}
+
+resource kmsIpGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
+  location: location
+  name: 'ipg-ksm-spokes'
+  properties: {
+    ipAddresses: [
+      '20.118.99.224'
+      '40.83.235.53'
+      '23.102.135.246'
+    ]
   }
   tags: mlzTags
 }
@@ -165,12 +178,14 @@ resource firewallNetworkRuleCollectionGroup 'Microsoft.Network/firewallPolicies/
             //   firewallSupernetIPAddress
             // ]
             sourceIpGroups: [
-              ipGroup.id
+              mlzIpGroup.id
             ]
-            destinationAddresses: [
-              '*'
+            // destinationAddresses: [
+            //   '*'
+            // ]
+            destinationIpGroups: [
+              mlzIpGroup.id
             ]
-            destinationIpGroups: []
             destinationFqdns: []
             destinationPorts: [
               '*'
@@ -179,6 +194,39 @@ resource firewallNetworkRuleCollectionGroup 'Microsoft.Network/firewallPolicies/
         ]
         name: 'AllowTrafficBetweenSpokes'
         priority: 200
+      }
+      {
+        ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+        action: {
+          type: 'Allow'
+        }
+        rules: [
+          {
+            ruleType: 'NetworkRule'
+            name: 'KMS'
+            ipProtocols: [
+              'Any'
+            ]
+            // sourceAddresses: [
+            //   firewallSupernetIPAddress
+            // ]
+            sourceIpGroups: [
+              mlzIpGroup.id
+            ]
+            // destinationAddresses: [
+            //   '*'
+            // ]
+            destinationIpGroups: [
+              kmsIpGroup.id
+            ]
+            destinationFqdns: []
+            destinationPorts: [
+              '*'
+            ]
+          }
+        ]
+        name: 'AllowTrafficBetweenSpokes'
+        priority: 210
       }
     ]
   }
