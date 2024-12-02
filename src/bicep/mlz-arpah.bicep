@@ -151,7 +151,7 @@ param firewallClientPublicIPAddressAvailabilityZones array = []
 @description('An array of Azure Firewall Public IP Address Availability Zones. It defaults to empty, or "No-Zone", because Availability Zones are not available in every cloud. See https://docs.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-addresses#sku for valid settings.')
 param firewallManagementPublicIPAddressAvailabilityZones array = []
 
-@description('Supernet CIDR address for the entire network of vnets, this address allows for communication between spokes. Recommended to use a Supernet calculator if modifying vnet addresses')
+@description('Supernet CIDR address for the entire network of vnets, this address allows for communication between spokes. Recommended to use a Supernet calculator if modifying vnet addresses.  NOTE:  this is the 3 CIDR addresses for ARPA-H Azure IPAM; comma-separated string')
 param firewallSupernetIPAddress string = '10.0.128.0/18'
 
 @description('An array of Public IP Address Diagnostic Logs for the Azure Firewall. See https://docs.microsoft.com/en-us/azure/ddos-protection/diagnostic-logging?tabs=DDoSProtectionNotifications#configure-ddos-diagnostic-logs for valid settings.')
@@ -617,7 +617,8 @@ module networking 'modules/networking-arpah.bicep' = {
       managementPublicIPAddressAvailabilityZones: firewallManagementPublicIPAddressAvailabilityZones
       managementSubnetAddressPrefix: firewallManagementSubnetAddressPrefix
       skuTier: firewallSkuTier
-      supernetIPAddress: firewallSupernetIPAddress
+      //supernetIPAddress: firewallSupernetIPAddress
+      supernetIPAddress: split(firewallSupernetIPAddress, ',')
       threatIntelMode: firewallThreatIntelMode
     }
     location: location

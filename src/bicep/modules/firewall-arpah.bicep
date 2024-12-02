@@ -8,7 +8,7 @@ param clientIpConfigurationPublicIPAddressResourceId string
 param dnsServers array
 param enableProxy bool
 param firewallPolicyName string
-//param firewallSupernetIPAddress string
+param firewallSupernetIPAddress array
 @allowed([
   'Alert'
   'Deny'
@@ -34,7 +34,7 @@ param tags object = {}
 ])
 param threatIntelMode string
 
-param spokeVnetAddresses array
+//param spokeVnetAddresses array
 
 var intrusionDetectionObject = {
   mode: intrusionDetectionMode
@@ -106,7 +106,7 @@ resource mlzIpGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
   location: location
   name: 'ipg-mlz-spokes'
   properties: {
-    ipAddresses: spokeVnetAddresses
+    ipAddresses: firewallSupernetIPAddress
   }
   tags: mlzTags
 }

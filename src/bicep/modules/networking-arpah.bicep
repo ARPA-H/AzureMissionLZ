@@ -28,7 +28,7 @@ var spokes = filter(tiers, tier => tier.name != 'hub')
 var spokeResourceGroupNames = filter(resourceGroupNames, name => !contains(name, 'hub'))
 //var spokeVnetAddresses = spokes.vnetAddress
 
-var spokeVnetAddresses  = filter(spokes, spoke => spoke.vnetAddressPrefix)
+//var spokeVnetAddresses  = filter(spokes, spoke => spoke.vnetAddressPrefix)
 
 module hubNetwork 'hub-network-arpah.bicep' = {
   name: 'deploy-vnet-hub-${deploymentNameSuffix}'
@@ -53,7 +53,7 @@ module hubNetwork 'hub-network-arpah.bicep' = {
     firewallName: hub.namingConvention.azureFirewall
     firewallPolicyName: hub.namingConvention.azureFirewallPolicy
     firewallSkuTier: firewallSettings.skuTier
-    //firewallSupernetIPAddress: firewallSettings.supernetIPAddress
+    firewallSupernetIPAddress: firewallSettings.supernetIPAddress
     firewallThreatIntelMode: firewallSettings.threatIntelMode
     location: location
     mlzTags: mlzTags
@@ -69,7 +69,7 @@ module hubNetwork 'hub-network-arpah.bicep' = {
     vNetDnsServers: firewallSettings.skuTier == 'Premium' || firewallSettings.skuTier == 'Standard' ? [
       firewallSettings.clientPrivateIpAddress
     ] : []
-    spokeVnetAddresses: spokeVnetAddresses
+    //spokeVnetAddresses: spokeVnetAddresses
   }
 }
 
