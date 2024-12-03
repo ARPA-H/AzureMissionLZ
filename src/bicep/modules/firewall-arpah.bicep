@@ -59,6 +59,29 @@ resource firewallPolicy 'Microsoft.Network/firewallPolicies@2021-02-01' = {
   }
 }
 
+resource mlzIpGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
+  location: location
+  name: 'ipg-mlz-spokes'
+  properties: {
+    ipAddresses: firewallSupernetIPAddress
+  }
+  tags: mlzTags
+}
+
+resource kmsIpGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
+  location: location
+  name: 'ipg-ksm-spokes'
+  properties: {
+    ipAddresses: [
+      '20.118.99.224'
+      '40.83.235.53'
+      '23.102.135.246'
+    ]
+  }
+  tags: mlzTags
+}
+
+
 resource firewallAppRuleCollectionGroup 'Microsoft.Network/firewallPolicies/ruleCollectionGroups@2021-02-01' = {
   parent: firewallPolicy
   name: 'DefaultApplicationRuleCollectionGroup'
@@ -98,30 +121,44 @@ resource firewallAppRuleCollectionGroup 'Microsoft.Network/firewallPolicies/rule
         name: 'AzureAuth'
         priority: 110
       }
+      {
+        ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+        action: {
+          type: 'Allow'
+        }
+        rules: [
+          {
+            ruleType: 'ApplicationRule'
+            name: 'AllowOutboundTemp'
+            protocols: [
+              {
+                protocolType: 'Https'
+                port: 443
+              }
+              {
+                protocolType: 'Http'
+                port: 80
+              }
+            ]
+            fqdnTags: []
+            webCategories: []
+            targetFqdns: [
+              '*'
+            ]
+            targetUrls: []
+            terminateTLS: false
+            sourceAddresses: []
+            destinationAddresses: []
+            sourceIpGroups: [
+              mlzIpGroup.id
+            ]
+          }
+        ]
+        name: 'AzureAuth'
+        priority: 65000
+      }
     ]
   }
-}
-
-resource mlzIpGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
-  location: location
-  name: 'ipg-mlz-spokes'
-  properties: {
-    ipAddresses: firewallSupernetIPAddress
-  }
-  tags: mlzTags
-}
-
-resource kmsIpGroup 'Microsoft.Network/ipGroups@2024-03-01' = {
-  location: location
-  name: 'ipg-ksm-spokes'
-  properties: {
-    ipAddresses: [
-      '20.118.99.224'
-      '40.83.235.53'
-      '23.102.135.246'
-    ]
-  }
-  tags: mlzTags
 }
 
 resource firewallNetworkRuleCollectionGroup 'Microsoft.Network/firewallPolicies/ruleCollectionGroups@2021-02-01' = {
@@ -162,72 +199,64 @@ resource firewallNetworkRuleCollectionGroup 'Microsoft.Network/firewallPolicies/
         name: 'AllowAzureCloud'
         priority: 100
       }
-      {
-        ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
-        action: {
-          type: 'Allow'
-        }
-        rules: [
-          {
-            ruleType: 'NetworkRule'
-            name: 'AllSpokeTraffic'
-            ipProtocols: [
-              'Any'
-            ]
-            // sourceAddresses: [
-            //   firewallSupernetIPAddress
-            // ]
-            sourceIpGroups: [
-              mlzIpGroup.id
-            ]
-            // destinationAddresses: [
-            //   '*'
-            // ]
-            destinationIpGroups: [
-              mlzIpGroup.id
-            ]
-            destinationFqdns: []
-            destinationPorts: [
-              '*'
-            ]
-          }
-        ]
-        name: 'AllowTrafficBetweenSpokes'
-        priority: 200
-      }
-      {
-        ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
-        action: {
-          type: 'Allow'
-        }
-        rules: [
-          {
-            ruleType: 'NetworkRule'
-            name: 'KMS'
-            ipProtocols: [
-              'Any'
-            ]
-            // sourceAddresses: [
-            //   firewallSupernetIPAddress
-            // ]
-            sourceIpGroups: [
-              mlzIpGroup.id
-            ]
-            // destinationAddresses: [
-            //   '*'
-            // ]
-            destinationIpGroups: [
-              kmsIpGroup.id
-            ]
-            destinationFqdns: []
-            destinationPorts: [
-              '*'
-            ]
-          }
-        ]
-        name: 'AllowTrafficBetweenSpokes'
-        priority: 210
-      }
+      // {
+      //   ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+      //   action: {
+      //     type: 'Allow'
+      //   }
+      //   rules: [
+      //     {
+      //       ruleType: 'NetworkRule'
+      //       name: 'AllSpokeTraffic'
+      //       ipProtocols: [
+      //         'Any'
+      //       ]
+      //       sourceAddresses: []
+      //       sourceIpGroups: [
+      //         mlzIpGroup.id
+      //       ]
+      //       destinationAddresses: [
+      //         '*'
+      //       ]
+      //       destinationIpGroups: []
+      //       destinationFqdns: []
+      //       destinationPorts: [
+      //         '*'
+      //       ]
+      //     }
+      //   ]
+      //   name: 'AllowOutbound'
+      //   priority: 65000
+      // }
+      // {
+      //   ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+      //   action: {
+      //     type: 'Allow'
+      //   }
+      //   rules: [
+      //     {
+      //       ruleType: 'NetworkRule'
+      //       name: 'KMS'
+      //       ipProtocols: [
+      //         'Any'
+      //       ]
+      //       sourceAddresses: []
+      //       sourceIpGroups: [
+      //         mlzIpGroup.id
+      //       ]
+      //       destinationAddresses: []
+      //       destinationIpGroups: [
+      //         kmsIpGroup.id
+      //       ]
+      //       destinationFqdns: []
+      //       destinationPorts: [
+      //         '*'
+      //       ]
+      //     }
+      //   ]
+      //   name: 'AllowTrafficBetweenSpokes'
+      //   priority: 210
+      // }
     ]
   }
 }
