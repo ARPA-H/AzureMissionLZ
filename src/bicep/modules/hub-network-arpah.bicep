@@ -27,7 +27,8 @@ param firewallManagementSubnetAddressPrefix string
 param firewallName string
 param firewallPolicyName string
 param firewallSkuTier string
-param firewallSupernetIPAddress string
+param firewallSupernetIPAddress array
+
 @allowed([
   'Alert'
   'Deny'
@@ -46,6 +47,7 @@ param tags object
 param virtualNetworkAddressPrefix string
 param virtualNetworkName string
 param vNetDnsServers array
+//param spokeVnetAddresses array
 
 var subnets = union([
   {
@@ -319,6 +321,7 @@ module firewall '../modules/firewall-arpah.bicep' = {
     skuTier: firewallSkuTier
     tags: tags
     threatIntelMode: firewallThreatIntelMode
+    //spokeVnetAddresses: spokeVnetAddresses
   }
 }
 
