@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.32.4.45862",
-      "templateHash": "1304505980777649085"
+      "templateHash": "8151033231948366463"
     }
   },
   "parameters": {
@@ -8465,7 +8465,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.32.4.45862",
-              "templateHash": "1516204432983625080"
+              "templateHash": "9665025324779031374"
             }
           },
           "parameters": {
@@ -8532,7 +8532,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.32.4.45862",
-                      "templateHash": "14546732833942026419"
+                      "templateHash": "1225757599886217549"
                     }
                   },
                   "parameters": {
@@ -8547,7 +8547,7 @@
                     },
                     "enableAutoProvisioning": {
                       "type": "bool",
-                      "defaultValue": true,
+                      "defaultValue": false,
                       "metadata": {
                         "description": "Turn automatic deployment by Defender of the MMA (OMS VM extension) on or off"
                       }
@@ -8704,6 +8704,7 @@
                       }
                     },
                     {
+                      "condition": "[not(or(equals(environment().name, 'AzureCloud'), equals(environment().name, 'AzureUSGovernment')))]",
                       "type": "Microsoft.Security/autoProvisioningSettings",
                       "apiVersion": "2019-01-01",
                       "name": "default",
@@ -8712,6 +8713,7 @@
                       }
                     },
                     {
+                      "condition": "[not(or(equals(environment().name, 'AzureCloud'), equals(environment().name, 'AzureUSGovernment')))]",
                       "type": "Microsoft.Security/workspaceSettings",
                       "apiVersion": "2019-01-01",
                       "name": "default",
