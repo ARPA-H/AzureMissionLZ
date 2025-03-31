@@ -50,9 +50,9 @@ param tags object
 param timeZone string
 param validationEnvironment bool
 @secure()
-param virtualMachinePassword string
+param virtualMachineAdminPassword string
+param virtualMachineAdminUsername string
 param virtualMachineSize string
-param virtualMachineUsername string
 
 var galleryImageOffer = empty(imageVersionResourceId) ? '"${imageOffer}"' : 'null'
 var galleryImagePublisher = empty(imageVersionResourceId) ? '"${imagePublisher}"' : 'null'
@@ -137,6 +137,7 @@ module diskAccess 'diskAccess.bicep' = {
   scope: resourceGroup
   name: 'deploy-disk-access-${deploymentNameSuffix}'
   params: {
+    azureBlobsPrivateDnsZoneResourceId: '${privateDnsZoneResourceIdPrefix}${filter(privateDnsZones, name => contains(name, 'blob'))[0]}'
     hostPoolResourceId: hostPool.outputs.resourceId
     location: locationVirtualMachines
     mlzTags: mlzTags
@@ -201,8 +202,8 @@ module virtualMachine 'virtualMachine.bicep' = {
     subnetResourceId: subnetResourceId
     tags: tags
     virtualMachineName: replace(namingConvention.virtualMachine, serviceToken, 'mgt')
-    virtualMachinePassword: virtualMachinePassword
-    virtualMachineUsername: virtualMachineUsername
+    virtualMachineAdminPassword: virtualMachineAdminPassword
+    virtualMachineAdminUsername: virtualMachineAdminUsername
   }
 }
 
