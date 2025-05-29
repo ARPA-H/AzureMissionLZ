@@ -4,8 +4,9 @@ param availabilitySetNamePrefix string
 param availabilityZones array
 param avdConfigurationZipFileName string
 param batchCount int
-param dataCollectionRuleAssociationName string
+param dataCollectionRuleAssociationNamePrefix string
 param dataCollectionRuleResourceId string
+param delimiter string
 param deployFslogix bool
 param deploymentNameSuffix string
 param deploymentUserAssignedidentityClientId string
@@ -19,10 +20,12 @@ param domainName string
 param enableAcceleratedNetworking bool
 param enableAvdInsights bool
 param enableDrainMode bool
+param enableWindowsUpdate bool
 param fslogixContainerType string
-param hostPoolName string
+param hostPoolResourceId string
 param imageOffer string
 param imagePublisher string
+param imagePurchasePlan object
 param imageSku string
 param imageVersionResourceId string
 param location string
@@ -33,9 +36,9 @@ param networkSecurityGroupResourceId string
 param organizationalUnitPath string
 param profile string
 param resourceGroupManagement string
-param serviceToken string
 param sessionHostCount int
 param sessionHostIndex int
+param stampIndexFull string
 param storageAccountPrefix string
 param storageCount int
 param storageIndex int
@@ -93,16 +96,15 @@ var nvidiaVmSizes = [
   'Standard_NV36adms_A10_v5'
   'Standard_NV72ads_A10_v5'
 ]
-var sessionHostNamePrefix = replace(virtualMachineNamePrefix, serviceToken, '')
 var storageAccountToken = '${storageAccountPrefix}??' // The token is used for AntiVirus exclusions. The '??' represents the two digits at the end of each storage account name.
 
 resource hostPool 'Microsoft.DesktopVirtualization/hostPools@2023-09-05' existing = {
-  name: hostPoolName
-  scope: resourceGroup(subscription().subscriptionId, resourceGroupManagement)
+  name: split(hostPoolResourceId, '/')[8]
+  scope: resourceGroup(split(hostPoolResourceId, '/')[2], split(hostPoolResourceId, '/')[4])
 }
 
 resource networkInterface 'Microsoft.Network/networkInterfaces@2020-05-01' = [for i in range(0, sessionHostCount): {
-  name: '${replace(networkInterfaceNamePrefix, '-${serviceToken}', '')}-${padLeft((i + sessionHostIndex), 4, '0')}'
+  name: '${networkInterfaceNamePrefix}${padLeft((i + sessionHostIndex), 4, '0')}'
   location: location
   tags: tagsNetworkInterfaces
   properties: {
@@ -128,23 +130,19 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2020-05-01' = [fo
 }]
 
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-03-01' = [for i in range(0, sessionHostCount): {
-  name: '${sessionHostNamePrefix}${padLeft((i + sessionHostIndex), 4, '0')}'
+  name: '${virtualMachineNamePrefix}${padLeft((i + sessionHostIndex), 4, '0')}'
   location: location
   tags: tagsVirtualMachines
   identity: {
     type: 'SystemAssigned' // Required for Entra join
   }
-  plan: profile == 'ArcGISPro' ? {
-    name: imageSku
-    publisher: imagePublisher
-    product: imageOffer
-  } : null
+  plan: profile == 'ArcGISPro' ? imagePurchasePlan : null
   zones: availability == 'AvailabilityZones' ? [
     availabilityZones[i % length(availabilityZones)]
   ] : null
   properties: {
     availabilitySet: availability == 'AvailabilitySets' ? {
-      id: resourceId('Microsoft.Compute/availabilitySets', '${availabilitySetNamePrefix}-${padLeft((i + sessionHostIndex) / 200, 2, '0')}')
+      id: resourceId('Microsoft.Compute/availabilitySets', '${availabilitySetNamePrefix}${delimiter}${padLeft((i + sessionHostIndex) / 200, 2, '0')}')
     } : null
     hardwareProfile: {
       vmSize: virtualMachineSize
@@ -152,7 +150,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-03-01' = [for i 
     storageProfile: {
       imageReference: imageReference
       osDisk: {
-        name: '${replace(diskNamePrefix, '-${serviceToken}', '')}-${padLeft((i + sessionHostIndex), 4, '0')}'
+        name: '${diskNamePrefix}${padLeft((i + sessionHostIndex), 4, '0')}'
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
@@ -169,10 +167,10 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-03-01' = [for i 
     osProfile: {
       adminPassword: virtualMachineAdminPassword
       adminUsername: virtualMachineAdminUsername
-      computerName: '${sessionHostNamePrefix}${padLeft((i + sessionHostIndex), 4, '0')}'
+      computerName: '${virtualMachineNamePrefix}${padLeft((i + sessionHostIndex), 4, '0')}'
       windowsConfiguration: {
         provisionVMAgent: true
-        enableAutomaticUpdates: false
+        enableAutomaticUpdates: enableWindowsUpdate && hostPool.properties.hostPoolType == 'Personal' ? true : false
       }
       secrets: []
       allowExtensionOperations: true
@@ -276,7 +274,7 @@ resource extension_AzureMonitorWindowsAgent 'Microsoft.Compute/virtualMachines/e
 
 resource dataCollectionRuleAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2022-06-01' = [for i in range(0, sessionHostCount): if (enableAvdInsights) {
   scope: virtualMachine[i]
-  name: dataCollectionRuleAssociationName
+  name: '${dataCollectionRuleAssociationNamePrefix}${delimiter}${stampIndexFull}'
   properties: {
     dataCollectionRuleId: dataCollectionRuleResourceId
     description: 'AVD Insights data collection rule association'
@@ -286,7 +284,7 @@ resource dataCollectionRuleAssociation 'Microsoft.Insights/dataCollectionRuleAss
   ]
 }]
 
-module setSessionHostConfiguration '../common/runCommand.bicep' = [
+module setSessionHostConfiguration '../common/run-command.bicep' = [
   for i in range(0, sessionHostCount): {
     name: 'set-config-${batchCount}-${i}-${deploymentNameSuffix}'
     params: {
@@ -366,7 +364,7 @@ resource installAvdAgents 'Microsoft.Compute/virtualMachines/extensions@2021-03-
         modulesUrl: 'https://wvdportalstorageblob.blob.${environment().suffixes.storage}/galleryartifacts/${avdConfigurationZipFileName}'
         configurationFunction: 'Configuration.ps1\\AddSessionHost'
         properties: {
-          hostPoolName: hostPoolName
+          hostPoolName: split(hostPoolResourceId, '/')[8]
           registrationInfoTokenCredential: {
             UserName: 'PLACEHOLDER_DO_NOT_USE'
             Password: 'PrivateSettingsRef:RegistrationInfoToken'
@@ -389,7 +387,7 @@ resource installAvdAgents 'Microsoft.Compute/virtualMachines/extensions@2021-03-
 ]
 
 // Enables drain mode on the session hosts so users cannot login to the hosts immediately after the deployment
-module drainMode '../common/runCommand.bicep' = if (enableDrainMode) {
+module drainMode '../common/run-command.bicep' = if (enableDrainMode) {
   name: 'deploy-drain-mode-${batchCount}-${deploymentNameSuffix}'
   scope: resourceGroup(resourceGroupManagement)
   params: {
@@ -402,7 +400,7 @@ module drainMode '../common/runCommand.bicep' = if (enableDrainMode) {
       }
       { 
         name: 'hostPoolName' 
-        value: hostPoolName
+        value: split(hostPoolResourceId, '/')[8]
       }
       {
         name: 'HostPoolResourceGroupName' 
@@ -434,7 +432,7 @@ module drainMode '../common/runCommand.bicep' = if (enableDrainMode) {
       }
       {
         name: 'virtualMachineNamePrefix' 
-        value: sessionHostNamePrefix
+        value: virtualMachineNamePrefix
       }
     ]
     script: loadTextContent('../../artifacts/Set-AvdDrainMode.ps1')
@@ -518,9 +516,12 @@ resource extension_NvidiaGpuDriverWindows 'Microsoft.Compute/virtualMachines/ext
   properties: {
     publisher: 'Microsoft.HpcCompute'
     type: 'NvidiaGpuDriverWindows'
-    typeHandlerVersion: '1.2'
+    typeHandlerVersion: '1.9'
     autoUpgradeMinorVersion: true
-    settings: {}
+    // NVv3 VM sizes require a specific driver version: https://learn.microsoft.com/azure/virtual-machines/extensions/hpccompute-gpu-windows#known-issues
+    settings: startsWith(virtualMachineSize, 'Standard_NV') && (endsWith(virtualMachineSize, 's_v3') || endsWith(virtualMachineSize, 's_A10_v5')) ? {
+      driverVersion: '538.46'
+    } : {}
   }
   dependsOn: [
     extension_AADLoginForWindows

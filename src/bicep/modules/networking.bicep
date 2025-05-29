@@ -7,6 +7,7 @@ targetScope = 'subscription'
 
 param azureGatewaySubnetAddressPrefix string
 param bastionHostSubnetAddressPrefix string
+param delimiter string
 param deployAzureGatewaySubnet bool
 param deployBastion bool
 param deployIdentity bool
@@ -14,6 +15,7 @@ param deploymentNameSuffix string
 param dnsServers array
 param enableProxy bool
 param firewallSettings object
+param firewallRuleCollectionGroups array
 param location string
 param mlzTags object
 param privateDnsZoneNames array
@@ -39,45 +41,40 @@ module hubNetwork 'hub-network.bicep' = {
     enableProxy: enableProxy
     firewallClientPrivateIpAddress: firewallSettings.clientPrivateIpAddress
     firewallClientPublicIPAddressAvailabilityZones: firewallSettings.clientPublicIPAddressAvailabilityZones
-    firewallClientPublicIPAddressName: hub.namingConvention.azureFirewallClientPublicIPAddress
+    firewallClientPublicIPAddressName: '${hub.namingConvention.azureFirewallPublicIPAddress}${delimiter}client'
     firewallClientSubnetAddressPrefix: firewallSettings.clientSubnetAddressPrefix
     firewallIntrusionDetectionMode: firewallSettings.intrusionDetectionMode
     firewallManagementPublicIPAddressAvailabilityZones: firewallSettings.managementPublicIPAddressAvailabilityZones
-    firewallManagementPublicIPAddressName: hub.namingConvention.azureFirewallManagementPublicIPAddress
+    firewallManagementPublicIPAddressName: '${hub.namingConvention.azureFirewallPublicIPAddress}${delimiter}management'
     firewallManagementSubnetAddressPrefix: firewallSettings.managementSubnetAddressPrefix
     firewallName: hub.namingConvention.azureFirewall
     firewallPolicyName: hub.namingConvention.azureFirewallPolicy
     firewallSkuTier: firewallSettings.skuTier
-    firewallSupernetIPAddress: firewallSettings.supernetIPAddress
     firewallThreatIntelMode: firewallSettings.threatIntelMode
+    firewallRuleCollectionGroups: firewallRuleCollectionGroups
     location: location
     mlzTags: mlzTags
     networkSecurityGroupName: hub.namingConvention.networkSecurityGroup
     networkSecurityGroupRules: hub.nsgRules
-    networkWatcherName: hub.namingConvention.networkWatcher
-    networkWatcherResourceId: hub.networkWatcherResourceId
     routeTableName: hub.namingConvention.routeTable
     subnetAddressPrefix: hub.subnetAddressPrefix
     subnetName: hub.namingConvention.subnet
     tags: tags
     virtualNetworkAddressPrefix: hub.vnetAddressPrefix
     virtualNetworkName: hub.namingConvention.virtualNetwork
-    vNetDnsServers: firewallSettings.skuTier == 'Premium' || firewallSettings.skuTier == 'Standard' ? [
+    vNetDnsServers: [
       firewallSettings.clientPrivateIpAddress
-    ] : []
+    ]
   }
 }
 
 module spokeNetworks 'spoke-network.bicep' = [for (spoke, i) in spokes: {
   name: 'deploy-vnet-${spoke.name}-${deploymentNameSuffix}'
   params: {
-    deployUniqueResources: spoke.deployUniqueResources
     location: location
     mlzTags: mlzTags
     networkSecurityGroupName: spoke.namingConvention.networkSecurityGroup
     networkSecurityGroupRules: spoke.nsgRules
-    networkWatcherName: spoke.namingConvention.networkWatcher
-    networkWatcherResourceId: spoke.networkWatcherResourceId
     resourceGroupName: spokeResourceGroupNames[i]
     routeTableName: spoke.namingConvention.routeTable
     routeTableRouteNextHopIpAddress: firewallSettings.clientPrivateIpAddress

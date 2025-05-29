@@ -30,6 +30,9 @@ param bastionHostPublicIPAddressAvailabilityZones array = []
 @description('The CIDR Subnet Address Prefix for the Azure Bastion Subnet. It must be in the Hub Virtual Network space "hubVirtualNetworkAddressPrefix" parameter value. It must be /27 or larger.')
 param bastionHostSubnetAddressPrefix string = '10.0.128.192/26'
 
+@description('The firewall rules that will be applied to the Azure Firewall.')
+param customFirewallRuleCollectionGroups array = []
+
 @allowed([
   'Standard'
   'Free'
@@ -106,18 +109,6 @@ param enableProxy bool = true
 ])
 @description('[dev/prod/test] The abbreviation for the target environment.')
 param environmentAbbreviation string = 'dev'
-
-@description('The resource ID for an existing network watcher in the Hub tier for the desired deployment location. Only one network watcher per location can exist in a subscription and must be specified if it already exists. If the value is left empty, a new network watcher resource will be created.')
-param existingHubNetworkWatcherResourceId string = ''
-
-@description('The resource ID for an existing network watcher in the Identity tier for the desired deployment location. Only one network watcher per location can exist in a subscription and must be specified if it already exists. If the value is left empty, a new network watcher resource will be created.')
-param existingIdentityNetworkWatcherResourceId string = ''
-
-@description('The resource ID for an existing network watcher in the Operations tier for the desired deployment location. Only one network watcher per location can exist in a subscription and must be specified if it already exists. If the value is left empty, a new network watcher resource will be created.')
-param existingOperationsNetworkWatcherResourceId string = ''
-
-@description('The resource ID for an existing network watcher in the Shared Services tier for the desired deployment location. Only one network watcher per location can exist in a subscription and must be specified if it already exists. If the value is left empty, a new network watcher resource will be created.')
-param existingSharedServicesNetworkWatcherResourceId string = ''
 
 @description('An array of Azure Firewall Public IP Address Availability Zones. Default value = "[]" because Availability Zones are not available in every cloud. See the following URL for valid settings: https://learn.microsoft.com/azure/virtual-network/ip-services/public-ip-addresses#sku.')
 param firewallClientPublicIPAddressAvailabilityZones array = []
@@ -212,11 +203,10 @@ param firewallManagementPublicIPAddressAvailabilityZones array = []
 param firewallManagementSubnetAddressPrefix string = '10.0.128.64/26'
 
 @allowed([
-  'Standard'
   'Premium'
-  'Basic'
+  'Standard'
 ])
-@description('[Standard/Premium/Basic] The SKU for Azure Firewall. Default value = "Premium". Selecting a value other than Premium is not recommended for environments that are required to be SCCA compliant.')
+@description('[Premium/Standard] The SKU for Azure Firewall. Default value = "Premium". Selecting a value other than Premium is not recommended for environments that are required to be SCCA compliant.')
 param firewallSkuTier string = 'Premium'
 
 @description('Supernet CIDR address for the entire network of vnets, this address allows for communication between spokes. Recommended to use a Supernet calculator if modifying vnet addresses.')
@@ -272,6 +262,11 @@ param hubVirtualNetworkDiagnosticsMetrics array = [
 
 @description('The hybrid use benefit provides a discount on virtual machines when a customer has an on-premises Windows Server license with Software Assurance. Default value = "false".')
 param hybridUseBenefit bool = false
+
+@minLength(1)
+@maxLength(6)
+@description('1-6 alphanumeric characters without whitespace, used to name resources and generate uniqueness for resources within your subscription. Ideally, the value should represent an organization, department, or business unit.')
+param identifier string
 
 @description('An array of Network Security Group diagnostic logs to apply to the Identity Virtual Network. See the following URL for valid settings: https://learn.microsoft.com/azure/virtual-network/virtual-network-nsg-manage-log#log-categories.')
 param identityNetworkSecurityGroupDiagnosticsLogs array = [
@@ -499,11 +494,6 @@ param publicIPAddressDiagnosticsMetrics array = [
   }
 ]
 
-@minLength(1)
-@maxLength(6)
-@description('A prefix, 1-6 alphanumeric characters without whitespace, used to prefix resources and generate uniqueness for resources within your subscription. Ideally, the value should represent department or project within your organization.')
-param resourcePrefix string
-
 @description('An array of Network Security Group diagnostic logs to apply to the SharedServices Virtual Network. See the following URL for valid settings: https://learn.microsoft.com/azure/virtual-network/virtual-network-nsg-manage-log#log-categories.')
 param sharedServicesNetworkSecurityGroupDiagnosticsLogs array = [
   {
@@ -593,64 +583,9 @@ param windowsVmStorageAccountType string = 'StandardSSD_LRS'
 @description('The version of the Windows Virtual Machine for remote access. Default value = "latest".')
 param windowsVmVersion string = 'latest'
 
+
 var firewallClientPrivateIpAddress = firewallClientUsableIpAddresses[3]
 var firewallClientUsableIpAddresses = [for i in range(0, 4): cidrHost(firewallClientSubnetAddressPrefix, i)]
-
-var networks = union([
-  {
-    name: 'hub'
-    shortName: 'hub'
-    deployUniqueResources: true
-    subscriptionId: hubSubscriptionId
-    networkWatcherResourceId: existingHubNetworkWatcherResourceId
-    nsgDiagLogs: hubNetworkSecurityGroupDiagnosticsLogs
-    nsgRules: hubNetworkSecurityGroupRules
-    vnetAddressPrefix: hubVirtualNetworkAddressPrefix
-    vnetDiagLogs: hubVirtualNetworkDiagnosticsLogs
-    vnetDiagMetrics: hubVirtualNetworkDiagnosticsMetrics
-    subnetAddressPrefix: hubSubnetAddressPrefix
-  }
-  {
-    name: 'operations'
-    shortName: 'ops'
-    deployUniqueResources: contains([ hubSubscriptionId ], operationsSubscriptionId) ? false : true
-    subscriptionId: operationsSubscriptionId
-    networkWatcherResourceId: existingOperationsNetworkWatcherResourceId
-    nsgDiagLogs: operationsNetworkSecurityGroupDiagnosticsLogs
-    nsgRules: operationsNetworkSecurityGroupRules
-    vnetAddressPrefix: operationsVirtualNetworkAddressPrefix
-    vnetDiagLogs: operationsVirtualNetworkDiagnosticsLogs
-    vnetDiagMetrics: operationsVirtualNetworkDiagnosticsMetrics
-    subnetAddressPrefix: operationsSubnetAddressPrefix
-  }
-  {
-    name: 'sharedServices'
-    shortName: 'svcs'
-    deployUniqueResources: contains([ hubSubscriptionId, operationsSubscriptionId ], sharedServicesSubscriptionId) ? false : true
-    subscriptionId: sharedServicesSubscriptionId
-    networkWatcherResourceId: existingSharedServicesNetworkWatcherResourceId
-    nsgDiagLogs: sharedServicesNetworkSecurityGroupDiagnosticsLogs
-    nsgRules: sharedServicesNetworkSecurityGroupRules
-    vnetAddressPrefix: sharedServicesVirtualNetworkAddressPrefix
-    vnetDiagLogs: sharedServicesVirtualNetworkDiagnosticsLogs
-    vnetDiagMetrics: sharedServicesVirtualNetworkDiagnosticsMetrics
-    subnetAddressPrefix: sharedServicesSubnetAddressPrefix
-  }
-], deployIdentity ? [
-  {
-    name: 'identity'
-    shortName: 'id'
-    deployUniqueResources: contains([ hubSubscriptionId, operationsSubscriptionId, sharedServicesSubscriptionId ], identitySubscriptionId) ? false : true
-    subscriptionId: identitySubscriptionId
-    networkWatcherResourceId: existingIdentityNetworkWatcherResourceId
-    nsgDiagLogs: identityNetworkSecurityGroupDiagnosticsLogs
-    nsgRules: identityNetworkSecurityGroupRules
-    vnetAddressPrefix: identityVirtualNetworkAddressPrefix
-    vnetDiagLogs: identityVirtualNetworkDiagnosticsLogs
-    vnetDiagMetrics: identityVirtualNetworkDiagnosticsMetrics
-    subnetAddressPrefix: identitySubnetAddressPrefix
-  }
-] : [])
 
 // LOGIC FOR DEPLOYMENTS
 
@@ -659,9 +594,55 @@ module logic 'modules/logic.bicep' = {
   params: {
     deploymentNameSuffix: deploymentNameSuffix
     environmentAbbreviation: environmentAbbreviation
+    identifier: identifier
     location: location
-    networks: networks
-    resourcePrefix: resourcePrefix
+    networks: union([
+      {
+        name: 'hub'
+        shortName: 'hub'
+        subscriptionId: hubSubscriptionId
+        nsgDiagLogs: hubNetworkSecurityGroupDiagnosticsLogs
+        nsgRules: hubNetworkSecurityGroupRules
+        vnetAddressPrefix: hubVirtualNetworkAddressPrefix
+        vnetDiagLogs: hubVirtualNetworkDiagnosticsLogs
+        vnetDiagMetrics: hubVirtualNetworkDiagnosticsMetrics
+        subnetAddressPrefix: hubSubnetAddressPrefix
+      }
+      {
+        name: 'operations'
+        shortName: 'ops'
+        subscriptionId: operationsSubscriptionId
+        nsgDiagLogs: operationsNetworkSecurityGroupDiagnosticsLogs
+        nsgRules: operationsNetworkSecurityGroupRules
+        vnetAddressPrefix: operationsVirtualNetworkAddressPrefix
+        vnetDiagLogs: operationsVirtualNetworkDiagnosticsLogs
+        vnetDiagMetrics: operationsVirtualNetworkDiagnosticsMetrics
+        subnetAddressPrefix: operationsSubnetAddressPrefix
+      }
+      {
+        name: 'sharedServices'
+        shortName: 'svcs'
+        subscriptionId: sharedServicesSubscriptionId
+        nsgDiagLogs: sharedServicesNetworkSecurityGroupDiagnosticsLogs
+        nsgRules: sharedServicesNetworkSecurityGroupRules
+        vnetAddressPrefix: sharedServicesVirtualNetworkAddressPrefix
+        vnetDiagLogs: sharedServicesVirtualNetworkDiagnosticsLogs
+        vnetDiagMetrics: sharedServicesVirtualNetworkDiagnosticsMetrics
+        subnetAddressPrefix: sharedServicesSubnetAddressPrefix
+      }
+    ], deployIdentity ? [
+      {
+        name: 'identity'
+        shortName: 'id'
+        subscriptionId: identitySubscriptionId
+        nsgDiagLogs: identityNetworkSecurityGroupDiagnosticsLogs
+        nsgRules: identityNetworkSecurityGroupRules
+        vnetAddressPrefix: identityVirtualNetworkAddressPrefix
+        vnetDiagLogs: identityVirtualNetworkDiagnosticsLogs
+        vnetDiagMetrics: identityVirtualNetworkDiagnosticsMetrics
+        subnetAddressPrefix: identitySubnetAddressPrefix
+      }
+    ] : [])
   }
 }
 
@@ -670,10 +651,10 @@ module logic 'modules/logic.bicep' = {
 module resourceGroups 'modules/resource-groups.bicep' = {
   name: 'deploy-resource-groups-${deploymentNameSuffix}'
   params: {
+    delimiter: logic.outputs.delimiter
     deploymentNameSuffix: deploymentNameSuffix
     location: location
     mlzTags: logic.outputs.mlzTags
-    serviceToken: logic.outputs.tokens.service
     tiers: logic.outputs.tiers
     tags: tags
   }
@@ -686,6 +667,7 @@ module networking 'modules/networking.bicep' = {
   params: {
     bastionHostSubnetAddressPrefix: bastionHostSubnetAddressPrefix
     azureGatewaySubnetAddressPrefix: azureGatewaySubnetAddressPrefix
+    delimiter: logic.outputs.delimiter
     deployIdentity: deployIdentity
     deploymentNameSuffix: deploymentNameSuffix
     deployBastion: deployBastion
@@ -703,6 +685,45 @@ module networking 'modules/networking.bicep' = {
       supernetIPAddress: firewallSupernetIPAddress
       threatIntelMode: firewallThreatIntelMode
     }
+    firewallRuleCollectionGroups: empty(customFirewallRuleCollectionGroups) ? [
+      {
+        name: 'MLZ-NetworkCollectionGroup'
+        properties: {
+          priority: 150
+          ruleCollections: [
+            {
+              name: 'AzureMonitor'
+              priority: 150
+              ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+              action: {
+                type: 'Allow'
+              }
+              rules: [
+                {
+                  name: 'AllowMonitorToLAW'
+                  ruleType: 'NetworkRule'
+                  ipProtocols: ['Tcp']
+                  sourceAddresses: concat(
+                    [
+                      hubVirtualNetworkAddressPrefix // Hub network
+                    ],
+                    [
+                      sharedServicesVirtualNetworkAddressPrefix // Shared network
+                    ],
+                    empty(identityVirtualNetworkAddressPrefix) ? [] : [identityVirtualNetworkAddressPrefix] // Include Identity network only if it has a value
+                  )
+                  destinationAddresses: [cidrHost(operationsVirtualNetworkAddressPrefix, 3)] // LAW private endpoint network
+                  destinationPorts: ['443'] // HTTPS port for Azure Monitor
+                  sourceIpGroups: []
+                  destinationIpGroups: []
+                  destinationFqdns: []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ] : customFirewallRuleCollectionGroups
     location: location
     mlzTags: logic.outputs.mlzTags
     privateDnsZoneNames: logic.outputs.privateDnsZones
@@ -727,7 +748,6 @@ module customerManagedKeys 'modules/customer-managed-keys.bicep' = {
     subnetResourceId: networking.outputs.hubSubnetResourceId
     tags: tags
     tier: filter(logic.outputs.tiers, tier => tier.name == 'hub')[0]
-    tokens: logic.outputs.tokens
     workloadShortName: 'ops'
   }
 }
@@ -761,6 +781,7 @@ module remoteAccess 'modules/remote-access.bicep' = {
     bastionHostPublicIPAddressAvailabilityZones: bastionHostPublicIPAddressAvailabilityZones
     bastionHostPublicIPAddressSkuName: 'Standard'
     bastionHostSubnetResourceId: networking.outputs.bastionHostSubnetResourceId
+    delimiter: logic.outputs.delimiter
     deployBastion: deployBastion
     deployLinuxVirtualMachine: deployLinuxVirtualMachine
     deployWindowsVirtualMachine: deployWindowsVirtualMachine
@@ -783,7 +804,6 @@ module remoteAccess 'modules/remote-access.bicep' = {
     location: location
     logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceResourceId
     mlzTags: logic.outputs.mlzTags
-    serviceToken: logic.outputs.tokens.service
     supportedClouds: supportedClouds
     tags: tags
     windowsVmAdminPassword: windowsVmAdminPassword
@@ -814,7 +834,6 @@ module storage 'modules/storage.bicep' = {
     mlzTags: logic.outputs.mlzTags
     queuesPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.queue
     resourceGroupNames: resourceGroups.outputs.names
-    serviceToken: logic.outputs.tokens.service
     storageEncryptionKeyName: customerManagedKeys.outputs.storageKeyName
     tablesPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.table
     tags: tags
@@ -833,6 +852,7 @@ module diagnostics 'modules/diagnostics.bicep' = {
   params: {
     bastionDiagnosticsLogs: bastionDiagnosticsLogs
     bastionDiagnosticsMetrics: bastionDiagnosticsMetrics
+    delimiter: logic.outputs.delimiter
     deployBastion: deployBastion
     deployNetworkWatcherTrafficAnalytics: deployNetworkWatcherTrafficAnalytics
     deploymentNameSuffix: deploymentNameSuffix
@@ -850,7 +870,6 @@ module diagnostics 'modules/diagnostics.bicep' = {
     publicIPAddressDiagnosticsLogs: publicIPAddressDiagnosticsLogs
     publicIPAddressDiagnosticsMetrics: publicIPAddressDiagnosticsMetrics
     resourceGroupNames: resourceGroups.outputs.names
-    serviceToken: logic.outputs.tokens.service
     storageAccountResourceIds: storage.outputs.storageAccountResourceIds
     supportedClouds: supportedClouds
     tiers: logic.outputs.tiers
@@ -868,7 +887,6 @@ module policyAssignments 'modules/policy-assignments.bicep' =
       logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceResourceId
       policy: policy
       resourceGroupNames: resourceGroups.outputs.names
-      serviceToken: logic.outputs.tokens.service
       tiers: logic.outputs.tiers
       windowsAdministratorsGroupMembership: windowsVmAdminUsername
     }
