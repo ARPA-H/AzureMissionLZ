@@ -1,0 +1,39 @@
+# TIC 3.0 Firewall Rules - Example Configuration
+# Copy this file to terraform.tfvars and update with your values
+
+# Hub subscription and resource group
+hub_subscription_id     = "12345678-1234-1234-1234-123456789abc"
+hub_resource_group_name = "rg-mlz-hub-dev"
+firewall_policy_name    = "afwp-mlz-hub-dev"
+
+# Spoke VNet address ranges for Zero Trust segmentation
+spoke_vnet_addresses = [
+  "10.0.100.0/24",  # Operations spoke
+  "10.0.110.0/24",  # Shared services spoke
+  "10.0.120.0/24",  # Identity spoke
+  "10.0.130.0/24"   # Additional spoke
+]
+
+# Security configuration
+enable_high_security_mode = true
+enable_microsoft_365      = true
+enable_windows_update     = true
+enable_azure_devops       = false
+enable_github             = false
+
+# Approved external FQDNs (custom allow list)
+approved_external_fqdns = [
+  # "api.partner.gov",
+  # "*.approved-vendor.com",
+  # "data.research-org.edu"
+]
+
+# Tags
+tags = {
+  "Compliance"     = "TIC 3.0"
+  "Architecture"   = "Zero Trust"
+  "ManagedBy"      = "Terraform"
+  "DeploymentType" = "FirewallRules"
+  "Environment"    = "Development"
+  "Agency"         = "ARPA-H"
+}

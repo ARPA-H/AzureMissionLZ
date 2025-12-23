@@ -1,0 +1,11 @@
+# Terraform Backend Configuration (Optional)
+# Uncomment and configure for remote state management
+
+# terraform {
+#   backend "azurerm" {
+#     resource_group_name  = "rg-terraform-state"
+#     storage_account_name = "sttfstatearpah"
+#     container_name       = "tfstate"
+#     key                  = "firewall-rules-tic30.tfstate"
+#   }
+# }

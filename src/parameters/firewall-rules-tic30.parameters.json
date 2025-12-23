@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "hubSubscriptionId": {
+      "value": "YOUR_HUB_SUBSCRIPTION_ID"
+    },
+    "hubResourceGroupName": {
+      "value": "rg-mlz-hub-dev"
+    },
+    "firewallPolicyName": {
+      "value": "afwp-mlz-hub-dev"
+    },
+    "location": {
+      "value": "centralus"
+    },
+    "spokeVnetAddresses": {
+      "value": [
+        "10.0.100.0/24",
+        "10.0.110.0/24",
+        "10.0.120.0/24",
+        "10.0.130.0/24"
+      ]
+    },
+    "enableHighSecurityMode": {
+      "value": true
+    },
+    "enableMicrosoft365": {
+      "value": true
+    },
+    "enableWindowsUpdate": {
+      "value": true
+    },
+    "enableAzureDevOps": {
+      "value": false
+    },
+    "enableGitHub": {
+      "value": false
+    },
+    "approvedExternalFqdns": {
+      "value": []
+    },
+    "tags": {
+      "value": {
+        "Compliance": "TIC 3.0",
+        "Architecture": "Zero Trust",
+        "ManagedBy": "AzureMissionLZ",
+        "DeploymentType": "FirewallRules",
+        "Environment": "Development",
+        "Agency": "ARPA-H"
+      }
+    }
+  }
+}

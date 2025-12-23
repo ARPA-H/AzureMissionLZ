@@ -1,0 +1,338 @@
+name: Deploy TIC 3.0 Firewall Rules (Terraform)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      action:
+        description: 'Terraform action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      enableHighSecurityMode:
+        description: 'Enable high security mode'
+        required: true
+        default: true
+        type: boolean
+      enableMicrosoft365:
+        description: 'Enable Microsoft 365 access'
+        required: true
+        default: true
+        type: boolean
+      enableWindowsUpdate:
+        description: 'Enable Windows Update'
+        required: true
+        default: true
+        type: boolean
+      enableAzureDevOps:
+        description: 'Enable Azure DevOps access'
+        required: false
+        default: false
+        type: boolean
+      enableGitHub:
+        description: 'Enable GitHub access'
+        required: false
+        default: false
+        type: boolean
+      useRemoteState:
+        description: 'Use remote state (Azure Storage)'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  TERRAFORM_VERSION: '1.6.0'
+  WORKING_DIR: './src/terraform'
+  ARM_USE_AZUREAD: 'true'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+          enable-AzPSSession: false
+
+      - name: Setup Remote State Storage (if needed)
+        if: github.event.inputs.useRemoteState == 'true'
+        run: |
+          # Check if storage account name is available (i.e., doesn't exist yet)
+          NAME_AVAILABLE=$(az storage account check-name --name ${{ secrets.TF_STATE_STORAGE_ACCOUNT }} --query nameAvailable -o tsv 2>/dev/null || echo "false")
+          
+          if [ "$NAME_AVAILABLE" = "true" ]; then
+            echo "Storage account doesn't exist. Creating storage account for Terraform state..."
+            
+            # Create resource group if it doesn't exist
+            az group create \
+              --name ${{ secrets.TF_STATE_RESOURCE_GROUP }} \
+              --location ${{ secrets.TF_STATE_LOCATION || 'centralus' }} \
+              --tags "Purpose=TerraformState" "ManagedBy=GitHub Actions"
+            
+            # Create storage account
+            az storage account create \
+              --name ${{ secrets.TF_STATE_STORAGE_ACCOUNT }} \
+              --resource-group ${{ secrets.TF_STATE_RESOURCE_GROUP }} \
+              --location ${{ secrets.TF_STATE_LOCATION || 'centralus' }} \
+              --sku Standard_LRS \
+              --kind StorageV2 \
+              --encryption-services blob \
+              --min-tls-version TLS1_2 \
+              --allow-blob-public-access false \
+              --https-only true
+            
+            # Create container
+            az storage container create \
+              --name ${{ secrets.TF_STATE_CONTAINER || 'tfstate' }} \
+              --account-name ${{ secrets.TF_STATE_STORAGE_ACCOUNT }} \
+              --auth-mode login
+            
+            echo "Terraform state storage created successfully"
+          else
+            echo "Storage account already exists, skipping creation"
+          fi
+
+      - name: Configure Terraform Backend
+        if: github.event.inputs.useRemoteState == 'true'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          cat > backend.tf <<EOF
+          terraform {
+            backend "azurerm" {
+              resource_group_name  = "${{ secrets.TF_STATE_RESOURCE_GROUP }}"
+              storage_account_name = "${{ secrets.TF_STATE_STORAGE_ACCOUNT }}"
+              container_name       = "${{ secrets.TF_STATE_CONTAINER || 'tfstate' }}"
+              key                  = "firewall-rules-tic30-${{ github.event.inputs.environment }}.tfstate"
+              use_azuread_auth     = true
+            }
+          }
+          EOF
+          echo "Terraform backend configured for remote state"
+          cat backend.tf
+
+      - name: Create Terraform Variables File
+        run: |
+          cat > terraform.tfvars <<EOF
+          hub_subscription_id     = "${{ secrets.HUB_SUB_ID }}"
+          hub_resource_group_name = "${{ secrets.HUB_RESOURCE_GROUP }}"
+          firewall_policy_name    = "${{ secrets.FIREWALL_POLICY_NAME }}"
+          spoke_vnet_addresses    = ${{ secrets.SUPERNET_ADDRESS }}
+          
+          enable_high_security_mode = ${{ github.event.inputs.enableHighSecurityMode }}
+          enable_microsoft_365      = ${{ github.event.inputs.enableMicrosoft365 }}
+          enable_windows_update     = ${{ github.event.inputs.enableWindowsUpdate }}
+          enable_azure_devops       = ${{ github.event.inputs.enableAzureDevOps }}
+          enable_github             = ${{ github.event.inputs.enableGitHub }}
+          
+          approved_external_fqdns = []
+          
+          tags = {
+            "Compliance"     = "TIC 3.0"
+            "Architecture"   = "Zero Trust"
+            "ManagedBy"      = "Terraform"
+            "DeploymentType" = "FirewallRules"
+            "Environment"    = "${{ github.event.inputs.environment }}"
+            "Agency"         = "ARPA-H"
+          }
+          EOF
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+        run: |
+          if [ "${{ github.event.inputs.useRemoteState }}" = "true" ]; then
+            echo "Initializing Terraform with remote state backend..."
+            terraform init \
+              -backend-config="subscription_id=${{ secrets.SUBSCRIPTION_ID }}" \
+              -backend-config="tenant_id=${{ secrets.TENANT_ID }}" \
+              -backend-config="client_id=${{ secrets.CLIENT_ID }}"
+          else
+            echo "Initializing Terraform with local state..."
+            terraform init
+          fi
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'
+        run: |
+          terraform plan -no-color -input=false -out=tfplan
+        continue-on-error: false
+
+      - name: Display Plan
+        if: github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'
+        run: terraform show -no-color tfplan
+
+      - name: Terraform Apply
+        id: apply
+        if: github.event.inputs.action == 'apply'
+        run: terraform apply -auto-approve -input=false tfplan
+
+      - name: Terraform Outputs
+        id: output
+        if: github.event.inputs.action == 'apply' && steps.apply.outcome == 'success'
+        run: |
+          echo "FIREWALL_POLICY_ID=$(terraform output -raw firewall_policy_id)" >> $GITHUB_OUTPUT
+          echo "SPOKES_IP_GROUP_ID=$(terraform output -raw spokes_ip_group_id)" >> $GITHUB_OUTPUT
+
+      - name: Terraform Destroy Plan
+        id: destroy_plan
+        if: github.event.inputs.action == 'destroy'
+        run: terraform plan -destroy -no-color -input=false -out=tfplan-destroy
+
+      - name: Terraform Destroy
+        id: destroy
+        if**State Management:** ${{ github.event.inputs.useRemoteState == 'true' && 'Remote (Azure Storage)' || 'Local' }}
+          : github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve -input=false
+
+      - name: Create Deployment Summary
+        if: github.event.inputs.action == 'apply' && steps.apply.outcome == 'success'
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          # TIC 3.0 Firewall Rules Deployment (Terraform)
+          
+          ## ✅ Deployment Successful
+          
+          **Environment:** ${{ github.event.inputs.environment }}
+          **Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Tool:** Terraform ${{ env.TERRAFORM_VERSION }}
+          
+          ## Configuration
+          
+          | Setting | Value |
+          |---------|-------|
+          | TIC 3.0 Compliance | ✅ Enabled |
+          | Zero Trust Architecture | ✅ Enabled |
+          | High Security Mode | ${{ github.event.inputs.enableHighSecurityMode == 'true' && '✅' || '❌' }} |
+          | Microsoft 365 Access | ${{ github.event.inputs.enableMicrosoft365 == 'true' && '✅' || '❌' }} |
+          | Windows Update | ${{ github.event.inputs.enableWindowsUpdate == 'true' && '✅' || '❌' }} |
+          | Azure DevOps | ${{ github.event.inputs.enableAzureDevOps == 'true' && '✅' || '❌' }} |
+          | GitHub Access | ${{ github.event.inputs.enableGitHub == 'true' && '✅' || '❌' }} |
+          
+          ## Resources Created
+          
+          - **Firewall Policy**: ${{ steps.output.outputs.FIREWALL_POLICY_ID }}
+          - **Spokes IP Group**: ${{ steps.output.outputs.SPOKES_IP_GROUP_ID }}
+          
+          ## Rule Collection Groups
+          
+          - ✅ TIC30-100-BaselineSecurity
+          - ✅ TIC30-200-EssentialServices
+          - ✅ TIC30-300-MicrosoftServices
+          - ✅ TIC30-400-WorkloadSpecific
+          - ✅ TIC30-500-AzurePaaS
+          
+          ## Next Steps
+          
+          1. Review firewall logs in Log Analytics
+          2. Monitor for blocked connections
+          3. Update approved external FQDNs as needed
+          4. Verify application connectivity
+          
+          ## Terraform State
+          ${{ github.event.inputs.useRemoteState == 'true' && format('State file: Azure Storage - {0}/{1}', secrets.TF_STATE_STORAGE_ACCOUNT, secrets.TF_STATE_CONTAINER) || 'State file: Local (workflow artifact)' }}
+          State file location: Local (consider migrating to remote backend)
+          
+          EOF
+
+      - name: Comment PR with Plan
+        if: github.event_name == 'pull_request' && (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            
+            <details><summary>Show Plan</summary>
+            
+            \`\`\`terraform
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+            
+            </details>
+            
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Upload Terraform Plan
+        if: github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ github.run_number }}
+          path: ${{ env.WORKING_DIR }}/tfplan
+          retention-days: 30
+Upload State File (Local State Only)
+        if: github.event.inputs.useRemoteState == 'false' && (github.event.inputs.action == 'apply' && steps.apply.outcome == 'success')
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state-${{ github.run_number }}
+          path: ${{ env.WORKING_DIR }}/terraform.tfstate
+          retention-days: 90
+
+      - name: 
+      - name: Job Failed
+        if: failure()
+        run: |
+          echo "::error::Terraform deployment failed. Check logs for details."
+          exit 1
+
+      - name: Azure Logout
+        if: always()
+        run: |
+          az logout
+          az cache purge
+          az account clear

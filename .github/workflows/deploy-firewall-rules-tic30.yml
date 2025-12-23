@@ -1,0 +1,221 @@
+name: Deploy TIC 3.0 Firewall Rules
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      enableHighSecurityMode:
+        description: 'Enable high security mode (more restrictive)'
+        required: true
+        default: true
+        type: boolean
+      enableMicrosoft365:
+        description: 'Enable Microsoft 365 access'
+        required: true
+        default: true
+        type: boolean
+      enableWindowsUpdate:
+        description: 'Enable Windows Update'
+        required: true
+        default: true
+        type: boolean
+      enableAzureDevOps:
+        description: 'Enable Azure DevOps access'
+        required: false
+        default: false
+        type: boolean
+      enableGitHub:
+        description: 'Enable GitHub access'
+        required: false
+        default: false
+        type: boolean
+      whatIfOnly:
+        description: 'Run in What-If mode only (no deployment)'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  LOCATION: 'centralus'
+  DEPLOYMENT_NAME: 'deploy-fw-rules-tic30'
+
+jobs:
+  validate-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Log Deployment Parameters
+        run: |
+          echo "::group::Deployment Configuration"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "High Security Mode: ${{ github.event.inputs.enableHighSecurityMode }}"
+          echo "Microsoft 365: ${{ github.event.inputs.enableMicrosoft365 }}"
+          echo "Windows Update: ${{ github.event.inputs.enableWindowsUpdate }}"
+          echo "Azure DevOps: ${{ github.event.inputs.enableAzureDevOps }}"
+          echo "GitHub: ${{ github.event.inputs.enableGitHub }}"
+          echo "What-If Only: ${{ github.event.inputs.whatIfOnly }}"
+          echo "::endgroup::"
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+          enable-AzPSSession: false
+
+      - name: Validate Bicep Template
+        uses: azure/arm-deploy@v2
+        with:
+          scope: subscription
+          region: ${{ env.LOCATION }}
+          template: ./src/deploy-firewall-rules-tic30.bicep
+          deploymentMode: Validate
+          parameters: >
+            hubSubscriptionId=${{ secrets.HUB_SUB_ID }}
+            hubResourceGroupName=${{ secrets.HUB_RESOURCE_GROUP }}
+            firewallPolicyName=${{ secrets.FIREWALL_POLICY_NAME }}
+            location=${{ env.LOCATION }}
+            spokeVnetAddresses=${{ secrets.SUPERNET_ADDRESS }}
+            enableHighSecurityMode=${{ github.event.inputs.enableHighSecurityMode }}
+            enableMicrosoft365=${{ github.event.inputs.enableMicrosoft365 }}
+            enableWindowsUpdate=${{ github.event.inputs.enableWindowsUpdate }}
+            enableAzureDevOps=${{ github.event.inputs.enableAzureDevOps }}
+            enableGitHub=${{ github.event.inputs.enableGitHub }}
+          failOnStdErr: false
+
+      - name: Run What-If Analysis
+        if: github.event.inputs.whatIfOnly == 'true'
+        uses: azure/arm-deploy@v2
+        with:
+          scope: subscription
+          region: ${{ env.LOCATION }}
+          template: ./src/deploy-firewall-rules-tic30.bicep
+          parameters: >
+            hubSubscriptionId=${{ secrets.HUB_SUB_ID }}
+            hubResourceGroupName=${{ secrets.HUB_RESOURCE_GROUP }}
+            firewallPolicyName=${{ secrets.FIREWALL_POLICY_NAME }}
+            location=${{ env.LOCATION }}
+            spokeVnetAddresses=${{ secrets.SUPERNET_ADDRESS }}
+            enableHighSecurityMode=${{ github.event.inputs.enableHighSecurityMode }}
+            enableMicrosoft365=${{ github.event.inputs.enableMicrosoft365 }}
+            enableWindowsUpdate=${{ github.event.inputs.enableWindowsUpdate }}
+            enableAzureDevOps=${{ github.event.inputs.enableAzureDevOps }}
+            enableGitHub=${{ github.event.inputs.enableGitHub }}
+          additionalArguments: "--what-if"
+          failOnStdErr: false
+
+      - name: Deploy Firewall Rules
+        id: deploy
+        if: github.event.inputs.whatIfOnly == 'false'
+        uses: azure/arm-deploy@v2
+        with:
+          scope: subscription
+          region: ${{ env.LOCATION }}
+          deploymentName: ${{ env.DEPLOYMENT_NAME }}-${{ github.run_number }}
+          template: ./src/deploy-firewall-rules-tic30.bicep
+          parameters: >
+            hubSubscriptionId=${{ secrets.HUB_SUB_ID }}
+            hubResourceGroupName=${{ secrets.HUB_RESOURCE_GROUP }}
+            firewallPolicyName=${{ secrets.FIREWALL_POLICY_NAME }}
+            location=${{ env.LOCATION }}
+            spokeVnetAddresses=${{ secrets.SUPERNET_ADDRESS }}
+            enableHighSecurityMode=${{ github.event.inputs.enableHighSecurityMode }}
+            enableMicrosoft365=${{ github.event.inputs.enableMicrosoft365 }}
+            enableWindowsUpdate=${{ github.event.inputs.enableWindowsUpdate }}
+            enableAzureDevOps=${{ github.event.inputs.enableAzureDevOps }}
+            enableGitHub=${{ github.event.inputs.enableGitHub }}
+          failOnStdErr: false
+
+      - name: Display Deployment Results
+        if: github.event.inputs.whatIfOnly == 'false' && steps.deploy.outcome == 'success'
+        run: |
+          echo "::group::Deployment Results"
+          echo "Deployment Name: ${{ env.DEPLOYMENT_NAME }}-${{ github.run_number }}"
+          echo "Firewall Policy ID: ${{ steps.deploy.outputs.firewallPolicyId }}"
+          echo "Spokes IP Group ID: ${{ steps.deploy.outputs.spokesIpGroupId }}"
+          echo "::endgroup::"
+          
+          echo "::group::Configuration Summary"
+          echo "TIC 3.0 Compliance: Enabled"
+          echo "Zero Trust Architecture: Enabled"
+          echo "High Security Mode: ${{ github.event.inputs.enableHighSecurityMode }}"
+          echo "Microsoft 365: ${{ github.event.inputs.enableMicrosoft365 }}"
+          echo "Windows Update: ${{ github.event.inputs.enableWindowsUpdate }}"
+          echo "Azure DevOps: ${{ github.event.inputs.enableAzureDevOps }}"
+          echo "GitHub: ${{ github.event.inputs.enableGitHub }}"
+          echo "::endgroup::"
+
+      - name: Create Deployment Summary
+        if: github.event.inputs.whatIfOnly == 'false' && steps.deploy.outcome == 'success'
+        run: |
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+          # TIC 3.0 Firewall Rules Deployment
+          
+          ## ✅ Deployment Successful
+          
+          **Environment:** ${{ github.event.inputs.environment }}
+          **Deployment Name:** ${{ env.DEPLOYMENT_NAME }}-${{ github.run_number }}
+          **Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          ## Configuration
+          
+          | Setting | Value |
+          |---------|-------|
+          | TIC 3.0 Compliance | ✅ Enabled |
+          | Zero Trust Architecture | ✅ Enabled |
+          | High Security Mode | ${{ github.event.inputs.enableHighSecurityMode == 'true' && '✅' || '❌' }} |
+          | Microsoft 365 Access | ${{ github.event.inputs.enableMicrosoft365 == 'true' && '✅' || '❌' }} |
+          | Windows Update | ${{ github.event.inputs.enableWindowsUpdate == 'true' && '✅' || '❌' }} |
+          | Azure DevOps | ${{ github.event.inputs.enableAzureDevOps == 'true' && '✅' || '❌' }} |
+          | GitHub Access | ${{ github.event.inputs.enableGitHub == 'true' && '✅' || '❌' }} |
+          
+          ## Rule Collection Groups Created
+          
+          - **TIC30-100-BaselineSecurity** - Blocks malicious categories and insecure protocols
+          - **TIC30-200-EssentialServices** - Azure management and authentication services
+          - **TIC30-300-MicrosoftServices** - Microsoft 365, Windows Update, etc.
+          - **TIC30-400-WorkloadSpecific** - Approved external services
+          - **TIC30-500-AzurePaaS** - Azure PaaS services (SQL, Cosmos DB, AI)
+          
+          ## Next Steps
+          
+          1. Review firewall logs in Log Analytics
+          2. Monitor for blocked connections
+          3. Update approved external FQDNs as needed
+          4. Verify application connectivity
+          
+          ## Resources
+          
+          - [Azure Firewall TIC 3.0 Guidance](https://learn.microsoft.com/en-us/azure/well-architected/service-guides/azure-firewall)
+          - [Zero Trust Architecture](https://learn.microsoft.com/en-us/security/zero-trust/)
+          EOF
+
+      - name: Deployment Failed
+        if: github.event.inputs.whatIfOnly == 'false' && steps.deploy.outcome == 'failure'
+        run: |
+          echo "::error::Firewall rules deployment failed. Check logs for details."
+          exit 1
+
+      - name: Azure Logout
+        if: always()
+        run: |
+          az logout
+          az cache purge
+          az account clear
