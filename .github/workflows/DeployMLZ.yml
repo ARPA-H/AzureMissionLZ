@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
  
       - name: OIDC Login to Azure Public Cloud
-        uses: azure/login@v2
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2
         with:
           client-id: ${{ secrets.CLIENT_ID }}
           tenant-id: ${{ secrets.TENANT_ID }}
@@ -21,7 +21,7 @@ jobs:
           enable-AzPSSession: true
 
       - name: Deploy MLZ
-        uses: azure/arm-deploy@v2
+        uses: azure/arm-deploy@a1361c2c2cd398621955b16ca32e01c65ea340f5 # v2
         with:
             scope: subscription
             region: centralus

@@ -14,6 +14,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  statuses: read
+
 jobs:
   build:
     name: lint-codebase
