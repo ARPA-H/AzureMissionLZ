@@ -18,3 +18,11 @@ output "firewall_logs_eventhub_name" {
 output "entra_id_logs_eventhub_name" {
   value = azurerm_eventhub.entra_id_logs.name
 }
+
+output "diagnostic_settings_authorization_rule_id" {
+  value = azurerm_eventhub_namespace_authorization_rule.send.id
+}
+
+output "diagnostic_settings_authorization_rule_name" {
+  value = azurerm_eventhub_namespace_authorization_rule.send.name
+}

@@ -43,7 +43,7 @@ Name | Description | Default
 `location` | Azure region for the Event Hub namespace | (required)
 `resource_group_name` | Existing MLZ resource group to host the namespace | (required)
 `naming_prefix` | Prefix segments for the naming module | `[]`
-`naming_suffix` | Suffix segments for the naming module | `["tic30"]`
+`naming_suffix` | Suffix segments for the naming module | `["operations", "tic30", "usc"]`
 `eventhub_namespace_sku` | Event Hub namespace SKU | `Standard`
 `eventhub_namespace_capacity` | Namespace throughput units | `1`
 `eventhub_partition_count` | Partition count per event hub | `2`
@@ -58,5 +58,7 @@ Name | Description
 `eventhub_namespace_name` | Name of the Event Hub namespace
 `firewall_logs_eventhub_name` | Name of the firewall logs event hub
 `entra_id_logs_eventhub_name` | Name of the Entra ID logs event hub
+`diagnostic_settings_authorization_rule_id` | Resource ID of the send-only authorization rule for diagnostic settings
+`diagnostic_settings_authorization_rule_name` | Name of the send-only authorization rule for diagnostic settings
 
-After apply, manually configure diagnostic settings on Azure Firewall and the Entra ID tenant to stream to `firewall_logs_eventhub_name` and `entra_id_logs_eventhub_name` respectively, using the namespace's authorization rule.
+After apply, manually configure diagnostic settings on Azure Firewall and the Entra ID tenant to stream to `firewall_logs_eventhub_name` and `entra_id_logs_eventhub_name` respectively, using `diagnostic_settings_authorization_rule_name`.

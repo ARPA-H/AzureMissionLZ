@@ -8,16 +8,17 @@ on:
     branches: [main]
     paths:
       - 'src/add-ons/tic30-diagnostics/terraform/**'
+      - '.github/workflows/deploy-tic30-diagnostics.yml'
   push:
     branches: [main]
     paths:
       - 'src/add-ons/tic30-diagnostics/terraform/**'
+      - '.github/workflows/deploy-tic30-diagnostics.yml'
   workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
-  pull-requests: write
 
 defaults:
   run:
@@ -40,6 +41,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
+          terraform_version: 1.15.9
           terraform_wrapper: false
 
       - name: Terraform Format Check
@@ -98,6 +100,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
+          terraform_version: 1.15.9
           terraform_wrapper: false
 
       - name: Terraform Init

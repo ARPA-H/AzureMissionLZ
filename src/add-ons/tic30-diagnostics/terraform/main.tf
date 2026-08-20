@@ -36,3 +36,13 @@ resource "azurerm_eventhub" "entra_id_logs" {
   partition_count   = var.eventhub_partition_count
   message_retention = var.eventhub_message_retention
 }
+
+# Send-only rule for the manual diagnostic settings step, instead of relying on the namespace's default (over-privileged) policy.
+resource "azurerm_eventhub_namespace_authorization_rule" "send" {
+  name                = "diagnostic-settings-send"
+  namespace_name      = azurerm_eventhub_namespace.tic30.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  listen              = false
+  send                = true
+  manage              = false
+}
