@@ -13,6 +13,7 @@ Name | Description
 [Azure Virtual Desktop](./azure-virtual-desktop/README.md) | Deploys Azure Virtual Desktop stamps in either generic or ArcGIS Pro configurations with FSLogix, AutoScale, AVD Insights, and more.
 [NAT Gateway](./nat-gateway/README.md) | Deploys a NAT Gateway and attaches it to AzureFirewallSubnet for hub egress
 [Policy Guardrails Tool](./policy-guardrails-tool/readMe.md) | Deploys Azure Policy guardrails at the subscription scope.
+[TIC 3.0 Diagnostics](./tic30-diagnostics/README.md) | Deploys (via Terraform) the Event Hub namespace and event hubs used as TIC 3.0 boundary streaming targets.
 [Tier3](./tier3/README.md) | Deploys a spoke network peered to the hub in preparation for the manual deployment of a workload.
 [VPN Gateway](./virtual-network-gateway/README.md) | Deploys a VPN Gateway for site-to-site connectivity and hub routing.
 [Zero Trust Imaging](./imaging/README.md) | Deploys images in an Azure Compute Gallery using a zero trust configuration with several configuration options.
