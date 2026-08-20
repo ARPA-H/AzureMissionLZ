@@ -22,7 +22,7 @@ variable "naming_prefix" {
 variable "naming_suffix" {
   type        = list(string)
   description = "Suffix segments passed to the Azure/naming/azurerm module (e.g. [\"mlz\", \"tic30\"])."
-  default     = ["tic30"]
+  default     = ["operations", "tic3.0", "usc"]
 }
 
 variable "eventhub_namespace_sku" {

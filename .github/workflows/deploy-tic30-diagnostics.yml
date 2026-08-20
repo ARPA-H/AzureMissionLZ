@@ -69,7 +69,7 @@ jobs:
           ARM_USE_OIDC: true
         run: |
           terraform plan -input=false -out=tfplan \
-            -var="location=${{ vars.TIC30_LOCATION }}" \
+            -var="location=centralus" \
             -var="resource_group_name=${{ vars.TIC30_RESOURCE_GROUP }}"
 
       - name: Upload Plan Artifact
@@ -121,5 +121,5 @@ jobs:
           ARM_USE_OIDC: true
         run: |
           terraform apply -input=false -auto-approve \
-            -var="location=${{ vars.TIC30_LOCATION }}" \
+            -var="location=centralus" \
             -var="resource_group_name=${{ vars.TIC30_RESOURCE_GROUP }}"
