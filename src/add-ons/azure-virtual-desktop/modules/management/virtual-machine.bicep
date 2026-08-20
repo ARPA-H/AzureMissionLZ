@@ -1,3 +1,4 @@
+param activeDirectorySolution string
 param deploymentUserAssignedIdentityPrincipalId string
 param deploymentUserAssignedIdentityResourceId string
 param diskEncryptionSetResourceId string
@@ -7,7 +8,7 @@ param diskSku string
 param domainJoinPassword string
 param domainJoinUserPrincipalName string
 param domainName string
-param hostPoolResourceId string
+param hostPoolResourceId string = ''
 param location string
 param mlzTags object
 param networkInterfaceName string
@@ -19,13 +20,14 @@ param virtualMachineName string
 @secure()
 param virtualMachineAdminPassword string
 param virtualMachineAdminUsername string
+param virtualMachineSize string
 
-var tagsVirtualMachines = union({'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.Compute/virtualMachines'] ?? {}, mlzTags)
+var tagsVirtualMachines = union(empty(hostPoolResourceId) ? {} : {'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.Compute/virtualMachines'] ?? {}, mlzTags)
 
 resource networkInterface 'Microsoft.Network/networkInterfaces@2020-05-01' = {
   name: networkInterfaceName
   location: location
-  tags: union({
+  tags: union(empty(hostPoolResourceId) ? {} : {
     'cm-resource-parent': hostPoolResourceId
   }, tags[?'Microsoft.Network/networkInterfaces'] ?? {}, mlzTags)
   properties: {
@@ -53,7 +55,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-11-01' = {
   tags: tagsVirtualMachines
   properties: {
     hardwareProfile: {
-      vmSize: 'Standard_B2s'
+      vmSize: virtualMachineSize
     }
     storageProfile: {
       imageReference: {
@@ -121,31 +123,6 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-11-01' = {
   }
 }
 
-resource extension_IaasAntimalware 'Microsoft.Compute/virtualMachines/extensions@2021-03-01' = {
-  parent: virtualMachine
-  name: 'IaaSAntimalware'
-  location: location
-  tags: tagsVirtualMachines
-  properties: {
-    publisher: 'Microsoft.Azure.Security'
-    type: 'IaaSAntimalware'
-    typeHandlerVersion: '1.3'
-    autoUpgradeMinorVersion: true
-    enableAutomaticUpgrade: false
-    settings: {
-      AntimalwareEnabled: true
-      RealtimeProtectionEnabled: 'true'
-      ScheduledScanSettings: {
-        isEnabled: 'true'
-        day: '7' // Day of the week for scheduled scan (1-Sunday, 2-Monday, ..., 7-Saturday)
-        time: '120' // When to perform the scheduled scan, measured in minutes from midnight (0-1440). For example: 0 = 12AM, 60 = 1AM, 120 = 2AM.
-        scanType: 'Quick' //Indicates whether scheduled scan setting type is set to Quick or Full (default is Quick)
-      }
-      Exclusions: {}
-    }
-  }
-}
-
 resource extension_GuestAttestation 'Microsoft.Compute/virtualMachines/extensions@2021-03-01' = {
   parent: virtualMachine
   name: 'GuestAttestation'
@@ -172,7 +149,7 @@ resource extension_GuestAttestation 'Microsoft.Compute/virtualMachines/extension
   }
 }
 
-resource extension_JsonADDomainExtension 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+resource extension_JsonADDomainExtension 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = if (contains(activeDirectorySolution, 'DomainServices')) {
   parent: virtualMachine
   name: 'JsonADDomainExtension'
   location: location

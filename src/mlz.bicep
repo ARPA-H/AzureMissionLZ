@@ -12,12 +12,12 @@ param addsDomainName string = ''
 @description('The password for the safe mode administrator account. Required when deployActiveDirectoryDomainServices is true.')
 param addsSafeModeAdminPassword string = ''
 
-@description('The password for the local administrator accounts on the Active Directory Domain Services (ADDS) domain controllers. Required when deployActiveDirectoryDomainServices is true.')
+@description('The password for the domain administrator account on the Active Directory Domain Services (ADDS) domain controllers. Required when deployActiveDirectoryDomainServices is true.')
 @secure()
-param addsVmAdminPassword string = ''
+param addsAdministratorPassword string = ''
 
-@description('The username for the local administrator accounts on the Active Directory Domain Services (ADDS) domain controllers. Required when deployActiveDirectoryDomainServices is true.')
-param addsVmAdminUsername string = ''
+@description('The username for the domain administrator account on the Active Directory Domain Services (ADDS) domain controllers. Required when deployActiveDirectoryDomainServices is true.')
+param addsAdministratorUsername string = ''
 
 @allowed([
   '2019-datacenter-core-g2' // Windows Server 2019 Datacenter Core Gen2
@@ -55,6 +55,22 @@ param bastionHostPublicIPAddressAvailabilityZones array = []
 
 @description('The CIDR Subnet Address Prefix for the Azure Bastion Subnet. It must be in the Hub Virtual Network space "hubVirtualNetworkAddressPrefix" parameter value. It must be /27 or larger.')
 param bastionHostSubnetAddressPrefix string = '10.0.128.192/26'
+
+@description('An array of Blob Diagnostic Logs categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/blobs/monitor-blob-storage?tabs=azure-portal#enable-diagnostic-logging.')
+param blobDiagnosticsLogs array = [
+  {
+    categoryGroup: 'allLogs'
+    enabled: true
+  }
+]
+
+@description('An array of Blob Diagnostic Metrics categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/blobs/monitor-blob-storage?tabs=azure-portal#enable-metrics.')
+param blobDiagnosticsMetrics array = [
+  {
+    category: 'Transaction'
+    enabled: true
+  }
+]
 
 @description('The firewall rules that will be applied to the Azure Firewall.')
 param customFirewallRuleCollectionGroups array = []
@@ -143,6 +159,22 @@ param enableProxy bool = true
 ])
 @description('[dev/prod/test] The abbreviation for the target environment.')
 param environmentAbbreviation string = 'dev'
+
+@description('An array of File Diagnostic Logs categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/files/monitor-file-storage?tabs=azure-portal#enable-diagnostic-logging.')
+param fileDiagnosticsLogs array = [
+  {
+    categoryGroup: 'allLogs'
+    enabled: true
+  }
+]
+
+@description('An array of File Diagnostic Metrics categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/files/monitor-file-storage?tabs=azure-portal#enable-metrics.')
+param fileDiagnosticsMetrics array = [
+  {
+    category: 'Transaction'
+    enabled: true
+  }
+]
 
 @description('An array of Azure Firewall Public IP Address Availability Zones. Default value = "[]" because Availability Zones are not available in every cloud. See the following URL for valid settings: https://learn.microsoft.com/azure/virtual-network/ip-services/public-ip-addresses#sku.')
 param firewallClientPublicIPAddressAvailabilityZones array = []
@@ -430,6 +462,9 @@ param logAnalyticsWorkspaceSkuName string = 'PerGB2018'
 @description('The Storage Account SKU to use for log storage. Default value = "Standard_GRS". See the following URL for valid settings: https://learn.microsoft.com/rest/api/storagerp/srp_sku_types.')
 param logStorageSkuName string = 'Standard_GRS'
 
+@description('The virtual machine size for the management virtual machine.')
+param managementVirtualMachineSize string = 'Standard_D2ds_v4'
+
 @description('An array of metrics to enable on the diagnostic setting for network interfaces.')
 param networkInterfaceDiagnosticsMetrics array = [
   {
@@ -521,6 +556,22 @@ param publicIPAddressDiagnosticsMetrics array = [
   }
 ]
 
+@description('An array of Queue Diagnostic Logs categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/queues/monitor-queue-storage?tabs=azure-portal#enable-diagnostic-logging.')
+param queueDiagnosticsLogs array = [
+  {
+    categoryGroup: 'allLogs'
+    enabled: true
+  }
+]
+
+@description('An array of Queue Diagnostic Metrics categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/queues/monitor-queue-storage?tabs=azure-portal#enable-metrics.')
+param queueDiagnosticsMetrics array = [
+  {
+    category: 'Transaction'
+    enabled: true
+  }
+]
+
 @description('An array of Network Security Group diagnostic logs to apply to the SharedServices Virtual Network. See the following URL for valid settings: https://learn.microsoft.com/azure/virtual-network/virtual-network-nsg-manage-log#log-categories.')
 param sharedServicesNetworkSecurityGroupDiagnosticsLogs array = [
   {
@@ -561,10 +612,37 @@ param sharedServicesVirtualNetworkDiagnosticsMetrics array = [
   }
 ]
 
+@description('An array of Storage Account Diagnostic Logs categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/common/monitor-storage?tabs=azure-portal#enable-diagnostic-logging.')
+param storageAccountDiagnosticsLogs array = []
+
+@description('An array of Storage Account Diagnostic Metrics categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/common/monitor-storage?tabs=azure-portal#enable-metrics.')
+param storageAccountDiagnosticsMetrics array = [
+  {
+    category: 'Transaction'
+    enabled: true
+  }
+]
+
 @description('The Azure clouds that support specific service features. Default value = "[\'AzureCloud\',\'AzureUSGovernment\']".')
 param supportedClouds array = [
   'AzureCloud'
   'AzureUSGovernment'
+]
+
+@description('An array of Table Diagnostic Logs categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/tables/monitor-table-storage?tabs=azure-portal#enable-diagnostic-logging.')
+param tableDiagnosticsLogs array = [
+  {
+    categoryGroup: 'allLogs'
+    enabled: true
+  }
+]
+
+@description('An array of Table Diagnostic Metrics categories to collect. See the following URL for valid values: https://learn.microsoft.com/azure/storage/tables/monitor-table-storage?tabs=azure-portal#enable-metrics.')
+param tableDiagnosticsMetrics array = [
+  {
+    category: 'Transaction'
+    enabled: true
+  }
 ]
 
 @description('A string dictionary of tags to add to deployed resources. See the following URL for valid settings: https://learn.microsoft.com/azure/azure-resource-manager/management/tag-resources?tabs=json#arm-templates.')
@@ -607,6 +685,7 @@ var firewallClientUsableIpAddresses = [for i in range(0, 4): cidrHost(firewallCl
 
 module networking 'modules/networking.bicep' = {
   name: 'deploy-networking-${deploymentNameSuffix}'
+  scope: subscription(hubSubscriptionId)
   params: {
     bastionHostSubnetAddressPrefix: bastionHostSubnetAddressPrefix
     azureGatewaySubnetAddressPrefix: azureGatewaySubnetAddressPrefix
@@ -614,12 +693,7 @@ module networking 'modules/networking.bicep' = {
     deploymentNameSuffix: deploymentNameSuffix
     deployBastion: deployBastion
     deployAzureGatewaySubnet: deployAzureGatewaySubnet
-    dnsServers: deployIdentity && deployActiveDirectoryDomainServices
-      ? [
-          cidrHost(identitySubnetAddressPrefix, hubSubscriptionId == identitySubscriptionId ? 3 : 4) // when the sub IDs are the same, a key vault is not deployed in the identity spoke
-          cidrHost(identitySubnetAddressPrefix, hubSubscriptionId == identitySubscriptionId ? 4 : 5) // when the sub IDs are the same, a key vault is not deployed in the identity spoke
-        ]
-      : dnsServers
+    dnsServers: dnsServers
     enableProxy: enableProxy
     environmentAbbreviation: environmentAbbreviation
     firewallSettings: {
@@ -660,6 +734,62 @@ module networking 'modules/networking.bicep' = {
                         destinationAddresses: [cidrHost(operationsVirtualNetworkAddressPrefix, 3)] // LAW private endpoint network
                         destinationPorts: ['443'] // HTTPS port for Azure Monitor
                       }
+                      {
+                        name: 'Allow-AAD-TCP'
+                        ruleType: 'NetworkRule'
+                        ipProtocols: [
+                          'Tcp'
+                        ]
+                        sourceAddresses: [
+                          firewallSupernetIPAddress
+                        ]
+                        destinationAddresses: ['AzureActiveDirectory']
+                        destinationPorts: [
+                          '443'
+                        ]
+                      }
+                      {
+                        name: 'Allow-KV-TCP'
+                        ruleType: 'NetworkRule'
+                        ipProtocols: [
+                          'Tcp'
+                        ]
+                        sourceAddresses: [
+                          firewallSupernetIPAddress
+                        ]
+                        destinationAddresses: ['AzureKeyVault']
+                        destinationPorts: [
+                          '443'
+                        ]
+                      }
+                      {
+                        name: 'Allow-KV-TCP'
+                        ruleType: 'NetworkRule'
+                        ipProtocols: [
+                          'Tcp'
+                        ]
+                        sourceAddresses: [
+                          firewallSupernetIPAddress
+                        ]
+                        destinationAddresses: ['AzureKeyVault']
+                        destinationPorts: [
+                          '443'
+                        ]
+                      }
+                      {
+                        name: 'Allow-ARM-TCP'
+                        ruleType: 'NetworkRule'
+                        ipProtocols: [
+                          'Tcp'
+                        ]
+                        sourceAddresses: [
+                          firewallSupernetIPAddress
+                        ]
+                        destinationAddresses: ['AzureResourceManager']
+                        destinationPorts: [
+                          '443'
+                        ]
+                      }
                     ],
                     deployActiveDirectoryDomainServices
                       ? [
@@ -671,8 +801,8 @@ module networking 'modules/networking.bicep' = {
                               firewallSupernetIPAddress
                             ]
                             destinationAddresses: [
-                              cidrHost(identityVirtualNetworkAddressPrefix, 3)
-                              cidrHost(identityVirtualNetworkAddressPrefix, 4)
+                              cidrHost(identityVirtualNetworkAddressPrefix, 5)
+                              cidrHost(identityVirtualNetworkAddressPrefix, 6)
                             ]
                             destinationPorts: [
                               '53' // DNS
@@ -694,8 +824,8 @@ module networking 'modules/networking.bicep' = {
                               firewallSupernetIPAddress
                             ]
                             destinationAddresses: [
-                              cidrHost(identitySubnetAddressPrefix, 3)
-                              cidrHost(identitySubnetAddressPrefix, 4)
+                              cidrHost(identitySubnetAddressPrefix, 5)
+                              cidrHost(identitySubnetAddressPrefix, 6)
                             ]
                             destinationPorts: [
                               '53' // DNS over UDP
@@ -724,8 +854,8 @@ module networking 'modules/networking.bicep' = {
                                   ],
                               deployActiveDirectoryDomainServices
                                 ? [
-                                    cidrHost(identitySubnetAddressPrefix, 3)
-                                    cidrHost(identitySubnetAddressPrefix, 4)
+                                    cidrHost(identitySubnetAddressPrefix, 5)
+                                    cidrHost(identitySubnetAddressPrefix, 6)
                                   ]
                                 : []
                             )
@@ -780,8 +910,8 @@ module networking 'modules/networking.bicep' = {
                                 ],
                             deployActiveDirectoryDomainServices
                               ? [
-                                  cidrHost(identitySubnetAddressPrefix, 3)
-                                  cidrHost(identitySubnetAddressPrefix, 4)
+                                  cidrHost(identitySubnetAddressPrefix, 5)
+                                  cidrHost(identitySubnetAddressPrefix, 6)
                                 ]
                               : []
                           )
@@ -858,7 +988,9 @@ module networking 'modules/networking.bicep' = {
 
 module monitoring 'modules/monitoring.bicep' = {
   name: 'deploy-monitoring-${deploymentNameSuffix}'
+  scope: subscription(operationsSubscriptionId)
   params: {
+    delimiter: networking.outputs.delimiter
     deploymentNameSuffix: deploymentNameSuffix
     deploySentinel: deploySentinel
     location: location
@@ -869,6 +1001,7 @@ module monitoring 'modules/monitoring.bicep' = {
     mlzTags: networking.outputs.mlzTags
     tags: tags
     tier: filter(networking.outputs.tiers, tier => tier.name == 'operations')[0]
+    tokens: networking.outputs.tokens
   }
 }
 
@@ -876,25 +1009,32 @@ module monitoring 'modules/monitoring.bicep' = {
 
 module activeDirectoryDomainServices 'modules/active-directory-domain-services.bicep' = if (deployActiveDirectoryDomainServices && deployIdentity) {
   name: 'deploy-adds-${deploymentNameSuffix}'
+  scope: subscription(identitySubscriptionId)
   params: {
-    adminPassword: addsVmAdminPassword
-    adminUsername: addsVmAdminUsername
+    adminPassword: addsAdministratorPassword
+    adminUsername: addsAdministratorUsername
     delimiter: networking.outputs.delimiter
     deploymentNameSuffix: deploymentNameSuffix
     domainName: addsDomainName
     environmentAbbreviation: environmentAbbreviation
+    firewallPolicyResourceId: networking.outputs.firewallPolicyResourceId
     hybridUseBenefit: hybridUseBenefit
     imageOffer: 'WindowsServer'
     imagePublisher: 'MicrosoftWindowsServer'
     imageSku: addsVmImageSku
     imageVersion: windowsVmImageVersion
+    ipAddresses: [
+      cidrHost(identitySubnetAddressPrefix, 5)
+      cidrHost(identitySubnetAddressPrefix, 6)
+    ]
     keyVaultPrivateDnsZoneResourceId: networking.outputs.privateDnsZoneResourceIds.keyVault
     location: location
     mlzTags: networking.outputs.mlzTags
     resourceAbbreviations: networking.outputs.resourceAbbreviations
     safeModeAdminPassword: addsSafeModeAdminPassword
     tags: tags
-    tier: filter(networking.outputs.tiers, tier => tier.name == 'identity')[0]
+    tiers: networking.outputs.tiers
+    tokens: networking.outputs.tokens
     vmSize: addsVmSize
   }
 }
@@ -903,6 +1043,7 @@ module activeDirectoryDomainServices 'modules/active-directory-domain-services.b
 
 module remoteAccess 'modules/remote-access.bicep' = if (deployBastion || deployLinuxVirtualMachine || deployWindowsVirtualMachine) {
   name: 'deploy-remote-access-${deploymentNameSuffix}'
+  scope: subscription(hubSubscriptionId)
   params: {
     bastionHostPublicIPAddressAllocationMethod: 'Static'
     bastionHostPublicIPAddressAvailabilityZones: bastionHostPublicIPAddressAvailabilityZones
@@ -930,6 +1071,7 @@ module remoteAccess 'modules/remote-access.bicep' = if (deployBastion || deployL
     resourceAbbreviations: networking.outputs.resourceAbbreviations
     tags: tags
     tier: filter(networking.outputs.tiers, tier => tier.name == 'hub')[0]
+    tokens: networking.outputs.tokens
     windowsVmAdminPassword: windowsVmAdminPassword
     windowsVmAdminUsername: windowsVmAdminUsername
     windowsVmImageOffer: windowsVmImageOffer
@@ -944,7 +1086,8 @@ module remoteAccess 'modules/remote-access.bicep' = if (deployBastion || deployL
 // STORAGE FOR LOGGING
 
 module storage 'modules/storage.bicep' = {
-  name: 'deploy-log-storage-${deploymentNameSuffix}'
+  name: 'deploy-diag-storage-${deploymentNameSuffix}'
+  scope: subscription(hubSubscriptionId)
   params: {
     delimiter: networking.outputs.delimiter
     //deployIdentity: deployIdentity
@@ -954,9 +1097,12 @@ module storage 'modules/storage.bicep' = {
     logStorageSkuName: logStorageSkuName
     mlzTags: networking.outputs.mlzTags
     privateDnsZoneResourceIds: networking.outputs.privateDnsZoneResourceIds
+    purpose: 'diag'
     resourceAbbreviations: networking.outputs.resourceAbbreviations
     tags: tags
     tiers: networking.outputs.tiers
+    tokens: networking.outputs.tokens
+    virtualMachineSize: managementVirtualMachineSize
   }
   dependsOn: [
     activeDirectoryDomainServices // This is needed to ensure the first two IPs in the identity subnet are availabile for the domain controllers
@@ -968,25 +1114,34 @@ module storage 'modules/storage.bicep' = {
 
 module diagnosticSettings 'modules/diagnostic-settings.bicep' = {
   name: 'deploy-diagnostic-settings-${deploymentNameSuffix}'
+  scope: subscription(hubSubscriptionId)
   params: {
     bastionDiagnosticsLogs: bastionDiagnosticsLogs
     bastionDiagnosticsMetrics: bastionDiagnosticsMetrics
+    blobDiagnosticsLogs: blobDiagnosticsLogs
+    blobDiagnosticsMetrics: blobDiagnosticsMetrics
     delimiter: networking.outputs.delimiter
     deployBastion: deployBastion
     deployNetworkWatcherTrafficAnalytics: deployNetworkWatcherTrafficAnalytics
     deploymentNameSuffix: deploymentNameSuffix
+    fileDiagnosticsLogs: fileDiagnosticsLogs
+    fileDiagnosticsMetrics: fileDiagnosticsMetrics
     firewallDiagnosticsLogs: firewallDiagnosticsLogs
     firewallDiagnosticsMetrics: firewallDiagnosticsMetrics
     keyVaults: union(
       [
         storage.outputs.keyVaultProperties
       ],
-      deployActiveDirectoryDomainServices ? [
-        activeDirectoryDomainServices.outputs.keyVaultProperties
-      ] : [],
-      deployLinuxVirtualMachine || deployWindowsVirtualMachine ? [
-        remoteAccess.outputs.keyVaultProperties
-      ] : []
+      deployActiveDirectoryDomainServices
+        ? [
+            activeDirectoryDomainServices!.outputs.keyVaultProperties
+          ]
+        : [],
+      deployLinuxVirtualMachine || deployWindowsVirtualMachine
+        ? [
+            remoteAccess!.outputs.keyVaultProperties
+          ]
+        : []
     )
     keyVaultDiagnosticLogs: keyVaultDiagnosticsLogs
     keyVaultDiagnosticMetrics: keyVaultDiagnosticsMetrics
@@ -994,18 +1149,27 @@ module diagnosticSettings 'modules/diagnostic-settings.bicep' = {
     logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceResourceId
     networkInterfaceDiagnosticsMetrics: networkInterfaceDiagnosticsMetrics
     networkInterfaceResourceIds: union(
-      deployActiveDirectoryDomainServices && deployIdentity ? activeDirectoryDomainServices.outputs.networkInterfaceResourceIds : [],
+      deployActiveDirectoryDomainServices && deployIdentity
+        ? activeDirectoryDomainServices!.outputs.networkInterfaceResourceIds
+        : [],
       monitoring.outputs.networkInterfaceResourceIds,
-      deployLinuxVirtualMachine || deployWindowsVirtualMachine ? remoteAccess.outputs.networkInterfaceResourceIds : [],
+      deployLinuxVirtualMachine || deployWindowsVirtualMachine ? remoteAccess!.outputs.networkInterfaceResourceIds : [],
       flatten(storage.outputs.networkInterfaceResourceIds)
     )
     networkWatcherFlowLogsRetentionDays: networkWatcherFlowLogsRetentionDays
     networkWatcherFlowLogsType: networkWatcherFlowLogsType
     publicIPAddressDiagnosticsLogs: publicIPAddressDiagnosticsLogs
     publicIPAddressDiagnosticsMetrics: publicIPAddressDiagnosticsMetrics
+    queueDiagnosticsLogs: queueDiagnosticsLogs
+    queueDiagnosticsMetrics: queueDiagnosticsMetrics
+    storageAccountDiagnosticsLogs: storageAccountDiagnosticsLogs
+    storageAccountDiagnosticsMetrics: storageAccountDiagnosticsMetrics
     storageAccountResourceIds: storage.outputs.storageAccountResourceIds
     supportedClouds: supportedClouds
+    tableDiagnosticsLogs: tableDiagnosticsLogs
+    tableDiagnosticsMetrics: tableDiagnosticsMetrics
     tiers: networking.outputs.tiers
+    tokens: networking.outputs.tokens
   }
 }
 
@@ -1014,6 +1178,7 @@ module diagnosticSettings 'modules/diagnostic-settings.bicep' = {
 
 module security 'modules/security.bicep' = {
   name: 'deploy-security-${deploymentNameSuffix}'
+  scope: subscription(hubSubscriptionId)
   params: {
     defenderPlans: deployDefenderPlans
     defenderSkuTier: defenderSkuTier
@@ -1030,8 +1195,10 @@ module security 'modules/security.bicep' = {
 }
 
 output azureFirewallResourceId string = networking.outputs.azureFirewallResourceId
+output domainControllerResourceIds array = deployActiveDirectoryDomainServices && deployIdentity
+  ? activeDirectoryDomainServices!.outputs.virtualMachineResourceIds
+  : []
+output hubStorageAccountResourceId string = storage.outputs.storageAccountResourceIds[0]
 output hubVirtualNetworkResourceId string = networking.outputs.hubVirtualNetworkResourceId
 output logAnalyticsWorkspaceResourceId string = monitoring.outputs.logAnalyticsWorkspaceResourceId
 output privateLinkScopeResourceId string = monitoring.outputs.privateLinkScopeResourceId
-output sharedServicesSubnetResourceId string = networking.outputs.sharedServicesSubnetResourceId
-output tiers array = networking.outputs.tiers

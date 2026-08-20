@@ -12,6 +12,7 @@ param deployFslogix bool
 param deploymentNameSuffix string
 param deploymentUserAssignedIdentityClientId string
 param deploymentUserAssignedIdentityPrincipalId string
+param deployWindowsAntimalware bool
 param diskAccessPolicyDefinitionId string
 param diskAccessPolicyDisplayName string
 param diskAccessResourceId string
@@ -41,7 +42,7 @@ param logAnalyticsWorkspaceResourceId string
 param managementVirtualMachineName string
 param maxResourcesPerTemplateDeployment int
 param mlzTags object
-param netAppFileShares array
+param netAppFileServer string
 param organizationalUnitPath string
 param profile string
 param resourceGroupManagement string
@@ -59,12 +60,13 @@ param storageService string
 param storageSuffix string
 param tags object
 param tier object
+param tokens object
 @secure()
 param virtualMachineAdminPassword string
 param virtualMachineAdminUsername string
 param virtualMachineSize string
 
-var availabilitySetNamePrefix = tier.namingConvention.availabilitySet
+var availabilitySetNamePrefix = replace(tier.namingConvention.availabilitySet, '${delimiter}${tokens.purpose}', '')
 var tagsVirtualMachines = union({'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.Compute/virtualMachines'] ?? {}, mlzTags)
 var uniqueToken = uniqueString(identifier, environmentAbbreviation, subscription().subscriptionId)
 
@@ -80,7 +82,7 @@ resource computeGalleryImage 'Microsoft.Compute/galleries/images@2023-07-03' exi
 
 
 resource rg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
-  name: '${tier.namingConvention.resourceGroup}${delimiter}hosts'
+  name: replace(tier.namingConvention.resourceGroup, tokens.purpose, 'hosts')
   location: location
   tags: union({'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.Resources/resourceGroups'] ?? {}, mlzTags)
 }
@@ -156,7 +158,7 @@ module disableAutoscale '../common/run-command.bicep' = {
       }
       {
         name: 'ScalingPlanName' 
-        value: tier.namingConvention.scalingPlan
+        value: replace(tier.namingConvention.scalingPlan, '${delimiter}${tokens.purpose}', '')
       }
       {
         name: 'SubscriptionId' 
@@ -184,14 +186,15 @@ module virtualMachines 'virtual-machines.bicep' = [for i in range(1, sessionHost
     availabilityZones: availabilityZones
     avdConfigurationZipFileUri: avdConfigurationZipFileUri
     batchCount: i
-    dataCollectionRuleAssociationName: tier.namingConvention.dataCollectionRuleAssociation
+    dataCollectionRuleAssociationName: replace(tier.namingConvention.dataCollectionRuleAssociation, '${delimiter}${tokens.purpose}', '')
     dataCollectionRuleResourceId: dataCollectionRuleResourceId
     delimiter: delimiter
     deployFslogix: deployFslogix
     deploymentNameSuffix: deploymentNameSuffix
     deploymentUserAssignedidentityClientId: deploymentUserAssignedIdentityClientId
+    deployWindowsAntimalware: deployWindowsAntimalware
     diskEncryptionSetResourceId: diskEncryptionSetResourceId
-    diskNamePrefix: tier.namingConvention.virtualMachineDisk
+    diskNamePrefix: replace(tier.namingConvention.virtualMachineDisk, '${delimiter}${tokens.purpose}', '')
     diskSku: diskSku
     domainJoinPassword: domainJoinPassword
     domainJoinUserPrincipalName: domainJoinUserPrincipalName
@@ -203,18 +206,18 @@ module virtualMachines 'virtual-machines.bicep' = [for i in range(1, sessionHost
     fslogixContainerType: fslogixContainerType
     hostPoolResourceId: hostPoolResourceId
     imageVersionResourceId: imageVersionResourceId
-    imageOffer: empty(imageVersionResourceId) ? imageOffer : image.properties.identifier.offer
-    imagePublisher: empty(imageVersionResourceId) ? imagePublisher : image.properties.identifier.publisher
-    imagePurchasePlan: profile == 'ArcGISPro' && !empty(imageVersionResourceId) ? computeGalleryImage.properties.purchasePlan : profile == 'ArcGISPro' && empty(imageVersionResourceId) ? {
+    imageOffer: empty(imageVersionResourceId) ? imageOffer : image!.properties.identifier.offer
+    imagePublisher: empty(imageVersionResourceId) ? imagePublisher : image!.properties.identifier.publisher
+    imagePurchasePlan: profile == 'ArcGISPro' && !empty(imageVersionResourceId) ? computeGalleryImage!.properties.purchasePlan : profile == 'ArcGISPro' && empty(imageVersionResourceId) ? {
       name: imageSku
       publisher: imagePublisher
       product: imageOffer
     } : {}
-    imageSku: empty(imageVersionResourceId) ? imageSku : image.properties.identifier.sku
+    imageSku: empty(imageVersionResourceId) ? imageSku : image!.properties.identifier.sku
     location: location
     managementVirtualMachineName: managementVirtualMachineName
-    netAppFileShares: netAppFileShares
-    networkInterfaceNamePrefix: tier.namingConvention.virtualMachineNetworkInterface
+    netAppFileServer: netAppFileServer
+    networkInterfaceNamePrefix: replace(tier.namingConvention.virtualMachineNetworkInterface, '${delimiter}${tokens.purpose}', '')
     networkSecurityGroupResourceId: tier.networkSecurityGroupResourceId
     organizationalUnitPath: organizationalUnitPath
     profile: profile
@@ -230,7 +233,7 @@ module virtualMachines 'virtual-machines.bicep' = [for i in range(1, sessionHost
     tagsNetworkInterfaces: union({'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.Network/networkInterfaces'] ?? {}, mlzTags)
     tagsVirtualMachines: tagsVirtualMachines
     uniqueToken: uniqueToken
-    virtualMachineNamePrefix: tier.namingConvention.virtualMachine
+    virtualMachineNamePrefix: replace(tier.namingConvention.virtualMachine, tokens.purpose, '')
     virtualMachineAdminPassword: virtualMachineAdminPassword
     virtualMachineAdminUsername: virtualMachineAdminUsername
     virtualMachineSize: virtualMachineSize
@@ -263,7 +266,7 @@ module virtualMachines 'virtual-machines.bicep' = [for i in range(1, sessionHost
   ]
 } */
 
-module scalingPlan '../control-plane/scaling-plan.bicep' = {
+module scalingPlan '../management/scaling-plan.bicep' = {
   name: 'deploy-scalingPlan-${deploymentNameSuffix}'
   scope: resourceGroup(resourceGroupManagement)
   params: {
@@ -273,8 +276,8 @@ module scalingPlan '../control-plane/scaling-plan.bicep' = {
     hostPoolType: hostPoolType
     location: location
     logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
-    scalingPlanDiagnosticSettingName: tier.namingConvention.scalingPlanDiagnosticSetting
-    scalingPlanName: tier.namingConvention.scalingPlan
+    scalingPlanDiagnosticSettingName: replace(tier.namingConvention.scalingPlanDiagnosticSetting, '${delimiter}${tokens.purpose}', '')
+    scalingPlanName: replace(tier.namingConvention.scalingPlan, '${delimiter}${tokens.purpose}', '')
     tags: union({'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.DesktopVirtualization/scalingPlans'] ?? {}, mlzTags)
     timeZone: locationProperties.timeZone
     weekdaysOffPeakStartTime: scalingWeekdaysOffPeakStartTime

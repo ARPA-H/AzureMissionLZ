@@ -3,24 +3,34 @@ param availability string
 param azureFilesPrivateDnsZoneResourceId string
 param delimiter string
 param deploymentNameSuffix string
+param deploymentUserAssignedIdentityClientId string
+@secure()
+param domainAdminPassword string
+@secure()
+param domainAdminUserPrincipalName string
 // param enableRecoveryServices bool
 param encryptionUserAssignedIdentityResourceId string
-param fileShares array
+param fileShareNames array
 param fslogixShareSizeInGB int
 param hostPoolResourceId string
 param keyVaultName string
 param keyVaultUri string
 param location string
+param managementVirtualMachineName string
 param mlzTags object
 param names object
+param netbios string
+param organizationalUnitPath string
 // param recoveryServicesVaultName string
 param resourceGroupManagement string
+param securityPrincipalNames array
 param securityPrincipalObjectIds array
 param storageCount int
 param storageIndex int
 param storageSku string
 param subnetResourceId string
 param tags object
+param tokens object
 
 var roleDefinitionId = '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb' // Storage File Data SMB Share Contributor 
 var smbMultiChannel = {
@@ -34,7 +44,7 @@ var smbSettings = {
   kerberosTicketEncryption: 'AES-256;'
   channelEncryption: 'AES-128-GCM;AES-256-GCM;'
 }
-var storageAccountNamePrefix = uniqueString(names.storageAccount, resourceGroup().id)
+var storageAccountNamePrefix = uniqueString(replace(names.storageAccount, tokens.purpose, 'fslogix'), resourceGroup().id)
 var storageRedundancy = availability == 'availabilityZones' ? '_ZRS' : '_LRS'
 var tagsPrivateEndpoints = union({'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.Network/privateEndpoints'] ?? {}, mlzTags)
 var tagsStorageAccounts = union({'cm-resource-parent': hostPoolResourceId}, tags[?'Microsoft.Storage/storageAccounts'] ?? {}, mlzTags)
@@ -147,7 +157,7 @@ resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2022-09-01
 module shares 'shares.bicep' = [for i in range(0, storageCount): {
   name: 'deploy-file-shares-${i}-${deploymentNameSuffix}'
   params: {
-    fileShares: fileShares
+    fileShares: fileShareNames
     fslogixShareSizeInGB: fslogixShareSizeInGB
     storageAccountName: storageAccounts[i].name
     storageSku: storageSku
@@ -159,14 +169,14 @@ module shares 'shares.bicep' = [for i in range(0, storageCount): {
 }]
 
 resource privateEndpoints 'Microsoft.Network/privateEndpoints@2023-04-01' = [for i in range(0, storageCount): {
-  name: '${names.storageAccountFilePrivateEndpoint}${delimiter}fslogix${delimiter}${padLeft(i + storageIndex, 2, '0')}'
+  name: '${replace(names.storageAccountFilePrivateEndpoint, tokens.purpose, 'fslogix')}${delimiter}${padLeft(i + storageIndex, 2, '0')}'
   location: location
   tags: tagsPrivateEndpoints
   properties: {
-    customNetworkInterfaceName: '${names.storageAccountFileNetworkInterface}${delimiter}fslogix${delimiter}${padLeft(i + storageIndex, 2, '0')}'
+    customNetworkInterfaceName: '${replace(names.storageAccountFileNetworkInterface, tokens.purpose, 'fslogix')}${delimiter}${padLeft(i + storageIndex, 2, '0')}'
     privateLinkServiceConnections: [
       {
-        name: '${names.storageAccountFilePrivateEndpoint}${delimiter}fslogix${delimiter}${padLeft(i + storageIndex, 2, '0')}'
+        name: '${replace(names.storageAccountFilePrivateEndpoint, tokens.purpose, 'fslogix')}${delimiter}${padLeft(i + storageIndex, 2, '0')}'
         properties: {
           privateLinkServiceId: storageAccounts[i].id
           groupIds: [
@@ -198,6 +208,78 @@ resource privateDnsZoneGroups 'Microsoft.Network/privateEndpoints/privateDnsZone
     storageAccounts
   ]
 }]
+
+
+module ntfsPermissions '../run-command.bicep' = {
+  name: 'deploy-fslogix-ntfs-permissions-${deploymentNameSuffix}'
+  scope: resourceGroup(resourceGroupManagement)
+  params: {
+    domainAdminPassword: domainAdminPassword
+    domainAdminUserPrincipalName: domainAdminUserPrincipalName
+    location: location
+    name: 'Set-NtfsPermissions.ps1'
+    parameters: [
+      {
+        name: 'ActiveDirectorySolution'
+        value: activeDirectorySolution
+      }
+      {
+        name: 'Netbios'
+        value: netbios
+      }
+      {
+        name: 'OrganizationalUnitPath'
+        value: organizationalUnitPath
+      }
+      {
+        name: 'ResourceManagerUri'
+        value: environment().resourceManager
+      }
+      {
+        name: 'SecurityPrincipalNames'
+        value: string(securityPrincipalNames)
+      }
+      {
+        name: 'ShareNames'
+        value: string(fileShareNames)
+      }
+      {
+        name: 'StorageAccountPrefix'
+        value: storageAccountNamePrefix
+      }
+      {
+        name: 'StorageAccountResourceGroupName'
+        value: resourceGroup().name
+      }
+      {
+        name: 'StorageCount'
+        value: storageCount
+      }
+      {
+        name: 'StorageIndex'
+        value: storageIndex
+      }
+      {
+        name: 'StorageSuffix'
+        value: environment().suffixes.storage
+      }
+      {
+        name: 'SubscriptionId'
+        value: subscription().subscriptionId
+      }
+      {
+        name: 'UserAssignedIdentityClientId'
+        value: deploymentUserAssignedIdentityClientId
+      }
+    ]
+    script: loadTextContent('../../../artifacts/Set-AzureFilesNtfsPermissions.ps1')
+    tags: tags
+    virtualMachineName: managementVirtualMachineName
+  }
+  dependsOn: [
+    privateDnsZoneGroups
+  ]
+}
 
 // Deploys backup items for Azure Files
 /* module recoveryServices 'recoveryServices.bicep' = if (enableRecoveryServices) {

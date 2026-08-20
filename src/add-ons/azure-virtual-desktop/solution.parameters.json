@@ -42,16 +42,19 @@
       "deploymentNameSuffix": {
           "value": ""
       },
+      "deployWindowsAntimalware": {
+          "value": true
+      },
       "desktopFriendlyName": {
           "value": ""
       },
       "diskSku": {
           "value": "Premium_LRS"
       },
-      "domainJoinPassword": {
+      "domainAdminPassword": {
           "value": ""
       },
-      "domainJoinUserPrincipalName": {
+      "domainAdminUserPrincipalName": {
           "value": ""
       },
       "domainName": {
@@ -90,6 +93,9 @@
       "fslogixContainerType": {
           "value": "ProfileContainer"
       },
+      "fslogixOrganizationalUnitPath": {
+          "value": ""
+      },
       "fslogixStorageService": {
           "value": "AzureFiles Standard"
       },
@@ -103,6 +109,9 @@
           "value": "Pooled"
       },
       "hubAzureFirewallResourceId": {
+          "value": ""
+      },
+      "hubStorageAccountResourceId": {
           "value": ""
       },
       "hubVirtualNetworkResourceId": {
@@ -155,6 +164,9 @@
       "logStorageSkuName": {
           "value": "Standard_GRS"
       },
+      "managementVirtualMachineSize": {
+          "value": "Standard_DS1_v2"
+      },
       "networkInterfaceDiagnosticsMetrics": {
           "value": [
             {
@@ -187,9 +199,6 @@
       "operationsLogAnalyticsWorkspaceResourceId": {
           "value": ""
       },
-      "organizationalUnitPath": {
-          "value": ""
-      },
       "policy": {
           "value": "NISTRev4"
       },
@@ -219,11 +228,14 @@
              
           ]
       },
-      "sessionHostCount": {
+      "sessionHostsCount": {
           "value": 1
       },
-      "sessionHostIndex": {
+      "sessionHostsIndex": {
           "value": 0
+      },
+      "sessionHostsOrganizationalUnitPath": {
+          "value": ""
       },
       "sharedServicesSubnetResourceId": {
           "value": ""
